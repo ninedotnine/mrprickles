@@ -249,10 +249,8 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
 
 void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type, 
                     const uint8_t *message, size_t length, void *user_data) {
-    TOX_ERR_FRIEND_QUERY err;
-    size_t size = tox_friend_get_name_size(tox, friendNum, &err);
-    uint8_t *name = calloc(sizeof(uint8_t), size);
-    tox_friend_get_name(tox, friendNum, name, &err);
+    uint8_t *name;
+    friend_name_from_num(&name, tox, friendNum);
     printf("friend %d (%s) says: %s\n", friendNum, name, message);
     // dan: what is the point of dest_msg ? get rid of it?
 	char dest_msg[length + 1];
