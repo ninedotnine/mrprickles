@@ -33,34 +33,6 @@ typedef struct DHT_node {
 } DHT_node;
 
 static const char *help_msg = "list of commands:\ninfo: show stats.\ncallme: launch an audio call.\nvideocallme: launch a video call.\nonline/away/busy: change my user status\nname: change my name\nstatus: change my status message";
-/*
-void friend_cleanup(Tox *tox) {
-	uint32_t friend_count = tox_self_get_friend_list_size(tox);
-	if (friend_count == 0) {
-		return; // aww )^:
-	}
-
-	uint32_t friends[friend_count];
-	tox_self_get_friend_list(tox, friends);
-
-	uint64_t curr_time = time(NULL);
-	for (uint32_t i = 0; i < friend_count; i++) {
-		TOX_ERR_FRIEND_GET_LAST_ONLINE err;
-		uint32_t friend = friends[i];
-		uint64_t last_online = tox_friend_get_last_online(tox, friend, &err);
-
-		if (err != TOX_ERR_FRIEND_GET_LAST_ONLINE_OK) {
-			printf("couldn't obtain 'last online', this shold never happen\n");
-			continue;
-		}
-
-		if (curr_time - last_online > 2629743) {
-			printf("removing friend %d\n", friend);
-			tox_friend_delete(tox, friend, NULL);
-		}
-	}
-}
-*/
 
 bool save_profile(Tox *tox) {
 	uint32_t save_size = tox_get_savedata_size(tox);
@@ -114,20 +86,7 @@ static void *run_tox(void *arg) {
 			reset_info(tox);
 		}
 
-        // let's not delete friends )^:
-        /*
-		uint64_t curr_time = time(NULL);
-		if (curr_time - last_purge > 1800) {
-			friend_cleanup(tox);
-			save_profile(tox);
-
-			last_purge = curr_time;
-		}
-        */ 
-
-// 		time = tox_iteration_interval(tox) * 1000000L;
 		interval = tox_iteration_interval(tox) * 1000L; // in microseconds
-// 		nanosleep((const struct timespec[]){{0, time}}, NULL);
 		usleep(interval);
 	}
 
@@ -167,7 +126,6 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options) {
 		*tox = tox_new(options, &err);
 		free(save_data);
 
-// 		return err == TOX_ERR_NEW_OK;
 		return err;
 	}
 
@@ -210,10 +168,6 @@ void friend_request(Tox *tox, const uint8_t *public_key,
 		printf("Added to our friend list\n");
 	}
 
-    /*
-    message = "aw, you want to be my friend :^)";
-    tox_friend_send_message(tox, friendNum, type, message, length, NULL);
-    */
 	save_profile(tox);
 }
 
@@ -226,7 +180,6 @@ void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friendNum) {
         puts("a problem occurred.");
         return;
     }
-//     uint8_t *name = calloc(sizeof(uint8_t), size);
     *str = calloc(sizeof(uint8_t), size);
     tox_friend_get_name(tox, friendNum, *str, &err);
     if (err != TOX_ERR_FRIEND_QUERY_OK) {
@@ -272,13 +225,6 @@ void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type,
                  get_online_friend_count(tox));
 		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
                                 (uint8_t *)friend_msg,strlen(friend_msg),NULL);
-
-        /*
-		snprintf(friend_msg, sizeof(friend_msg), 
-            "friends are removed after 1 month of inactivity";
-		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                                (uint8_t *)friend_msg strlen(friend_msg),NULL);
-        */
 
 		const char *info_msg = "If you're experiencing issues, well..."; 
 		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
@@ -528,16 +474,7 @@ int main(int argc, char *argv[]) {
         }
 
 
-        reset_info(g_tox); // FIXME: i hope this works
-        /*
-        const char *name = "dans own echobot"; // mr prickles
-        const char *status_msg = "audio/video testing bot. say info or help.";
-
-        tox_self_set_name(g_tox, (uint8_t *)name, strlen(name), NULL);
-        tox_self_set_status_message(g_tox, (uint8_t *)status_msg, 
-                                    strlen(status_msg), NULL);
-		save_profile(g_tox);
-        */
+        reset_info(g_tox);
 
         // set last_info_change to 0 to mean info hasn't been changed
         last_info_change = 0;
@@ -545,7 +482,6 @@ int main(int argc, char *argv[]) {
 
 
 	tox_callback_self_connection_status(g_tox, self_connection_status);
-//     void tox_callback_friend_connection_status(Tox *tox, tox_friend_connection_status_cb *callback);
     tox_callback_friend_connection_status(g_tox, friend_on_off);
 	tox_callback_friend_request(g_tox, friend_request);
 	tox_callback_friend_message(g_tox, friend_message);
