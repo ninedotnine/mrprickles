@@ -61,23 +61,21 @@ void reset_info(Tox * tox) {
     save_profile(tox);
 }
 
-static void *run_toxav(void *arg) {
-	ToxAV *toxav = (ToxAV *)arg;
+static void * run_toxav(void * arg) {
+	ToxAV * toxav = (ToxAV *) arg;
 
-	for (long long time;;) { // hehe 
+	for (long long interval; true; usleep(interval)) {
 		toxav_iterate(toxav);
-
-		time = toxav_iteration_interval(toxav) * 1000000L;
-		nanosleep((const struct timespec[]){{0, time}}, NULL);
+		interval = toxav_iteration_interval(toxav) * 1000L; // microseconds
 	}
-
 	return NULL;
 }
 
-static void *run_tox(void *arg) {
-	Tox *tox = (Tox *) arg;
+static void * run_tox(void * arg) {
+	Tox * tox = (Tox *) arg;
     uint64_t curr_time;
-    for (long long interval;;) {
+
+    for (long long interval; true; usleep(interval)) {
 		tox_iterate(tox, NULL);
 
         // reset name and status message every 60 minutes 
@@ -87,9 +85,7 @@ static void *run_tox(void *arg) {
 		}
 
 		interval = tox_iteration_interval(tox) * 1000L; // in microseconds
-		usleep(interval);
 	}
-
 	return NULL;
 }
 
