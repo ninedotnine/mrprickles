@@ -109,27 +109,29 @@ bool file_exists(const char *filename) {
 TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options) {
 	FILE *file = fopen(data_filename, "rb");
 
-	if (file) {
-		fseek(file, 0, SEEK_END);
-		long file_size = ftell(file);
-		fseek(file, 0, SEEK_SET);
+	if (! file) {
+        // this should never happen... 
+        printf("could not open file %s\n", data_filename);
+        return TOX_ERR_NEW_LOAD_BAD_FORMAT;
+    }
 
-		uint8_t *save_data = (uint8_t *)malloc(file_size * sizeof(uint8_t));
-		fread(save_data, sizeof(uint8_t), file_size, file);
-		fclose(file);
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
 
-		options->savedata_data = save_data;
-		options->savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
-		options->savedata_length = file_size;
+    uint8_t *save_data = (uint8_t *)malloc(file_size * sizeof(uint8_t));
+    fread(save_data, sizeof(uint8_t), file_size, file);
+    fclose(file);
 
-		TOX_ERR_NEW err;
-		*tox = tox_new(options, &err);
-		free(save_data);
+    options->savedata_data = save_data;
+    options->savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
+    options->savedata_length = file_size;
 
-		return err;
-	}
+    TOX_ERR_NEW err;
+    *tox = tox_new(options, &err);
+    free(save_data);
 
-	return false;
+    return err;
 }
 
 uint32_t get_online_friend_count(Tox *tox) {
@@ -473,13 +475,11 @@ int main(int argc, char *argv[]) {
             return -1;
         }
 
-
         reset_info(g_tox);
 
         // set last_info_change to 0 to mean info hasn't been changed
         last_info_change = 0;
 	}
-
 
 	tox_callback_self_connection_status(g_tox, self_connection_status);
     tox_callback_friend_connection_status(g_tox, friend_on_off);
@@ -496,7 +496,7 @@ int main(int argc, char *argv[]) {
 	printf("%s\n", address_hex);
 
 
-	TOX_ERR_BOOTSTRAP err3;
+	TOX_ERR_BOOTSTRAP err2;
 
     DHT_node nodes[] = {
         {"nodes.tox.chat",  33445, "788237D34978D1D5BD822F0A5BEBD2C53C64CC31CD3149350EE27D4D9A2F9B6B", {0}},
@@ -514,33 +514,29 @@ int main(int argc, char *argv[]) {
                        nodes[i].key_hex, sizeof(nodes[i].key_hex)-1, NULL, 
                        NULL, NULL);
         bool success = tox_bootstrap(g_tox, nodes[i].ip, nodes[i].port, 
-                                     nodes[i].key_bin, &err3);
+                                     nodes[i].key_bin, &err2);
         if (success) {
             puts(" success!");
-        } else {
-            if (err3 != TOX_ERR_BOOTSTRAP_OK) {
-                printf("\nCould not bootstrap, error: %d\n", err3);
-            } else {
-                // this should never happen
-                puts("no false, but err3 is TOX_ERR_BOOTSTRAP_OK !?!?!?");
-            }
+        } 
+        if (err2 != TOX_ERR_BOOTSTRAP_OK) {
+            printf("\nCould not bootstrap, error: %d\n", err2);
         }
     }
 
-	if (err3 != TOX_ERR_BOOTSTRAP_OK) {
-		printf("Could not bootstrap, error: %d\n", err3);
+	if (err2 != TOX_ERR_BOOTSTRAP_OK) {
+		printf("Could not bootstrap, error: %d\n", err2);
 		return -1;
 	}
 
-	TOXAV_ERR_NEW err2;
-	g_toxAV = toxav_new(g_tox, &err2);
+	TOXAV_ERR_NEW err3;
+	g_toxAV = toxav_new(g_tox, &err3);
 	toxav_callback_call(g_toxAV, call, NULL);
 	toxav_callback_call_state(g_toxAV, call_state, NULL);
 	toxav_callback_audio_receive_frame(g_toxAV, audio_receive_frame, NULL);
 	toxav_callback_video_receive_frame(g_toxAV, video_receive_frame, NULL);
 
-	if (err2 != TOXAV_ERR_NEW_OK) {
-		printf("Error at toxav_new: %d\n", err);
+	if (err3 != TOXAV_ERR_NEW_OK) {
+		printf("Error at toxav_new: %d\n", err3);
 		return -1;
 	}
 
