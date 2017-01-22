@@ -535,10 +535,9 @@ int main(int argc, char *argv[]) {
 	pthread_create(&toxav_thread, NULL, &run_toxav, g_toxAV);
 
 	while (!signal_exit) {
-// 		usleep(500000L); // half a second -- why this length? 
         /* as i understand it, the call to sleep will be interrupted by sigint
            anyway. there is no need to waste cpu resources here...  */
-		sleep(9999);
+		pause();
 	}
 
 	printf("Killing tox and saving profile\n");
