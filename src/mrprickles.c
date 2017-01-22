@@ -175,7 +175,11 @@ void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friendNum) {
     size_t size = tox_friend_get_name_size(tox, friendNum, &err);
     if (err != TOX_ERR_FRIEND_QUERY_OK) {
         // what should we do?
-        puts("a problem occurred.");
+        if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
+            printf("no friend %u.\n", friendNum);
+        } else {
+            puts("how did this happen?");
+        }
         return;
     }
     *str = calloc(sizeof(uint8_t), size);
@@ -246,18 +250,8 @@ void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type,
                 continue;
             }
 
-            uint8_t *name = calloc(sizeof(uint8_t), nameSize);
-            tox_friend_get_name(tox, i, name, &err);
-            if (err != TOX_ERR_FRIEND_QUERY_OK) {
-                puts("could not get friend name");
-                continue;
-            }
-
-            size_t friendNameSize = tox_friend_get_name_size(tox, i, &err);
-            if (err != TOX_ERR_FRIEND_QUERY_OK) {
-                puts("could not get name size");
-                continue;
-            }
+            uint8_t *name;
+            friend_name_from_num(&name, tox, i);
 
             // what is the status of an offline friend?
             TOX_USER_STATUS status = tox_friend_get_status(tox, i, &err);
@@ -267,7 +261,7 @@ void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type,
             }
 
             // enough space for name, 3-digit number, status
-            char msg[friendNameSize+17]; 
+            char msg[nameSize+17];
 
             if (tox_friend_get_connection_status(tox, friendList[i], NULL) 
                     == TOX_CONNECTION_NONE) {
