@@ -147,7 +147,9 @@ uint32_t get_online_friend_count(Tox *tox) {
 	return online_friend_count;
 }
 
-void self_connection_status(Tox *tox, TOX_CONNECTION status, void *userData) {
+void self_connection_status(__attribute__((unused)) Tox * tox,
+                            TOX_CONNECTION status,
+                            __attribute__((unused)) void *userData) {
 	if (status == TOX_CONNECTION_NONE) {
 		printf("Lost connection to the tox network\n");
 	} else {
@@ -155,10 +157,13 @@ void self_connection_status(Tox *tox, TOX_CONNECTION status, void *userData) {
 	}
 }
 
-void friend_request(Tox *tox, const uint8_t *public_key, 
-                    const uint8_t *message, size_t length, void *user_data) {
+void friend_request(Tox *tox, const uint8_t *public_key,
+                    const uint8_t *message,
+                    __attribute__((unused)) size_t length,
+                    __attribute__((unused)) void * user_data) {
 	TOX_ERR_FRIEND_ADD err;
 	tox_friend_add_norequest(tox, public_key, &err);
+    printf("%s\n", message);
 
 	if (err != TOX_ERR_FRIEND_ADD_OK) {
 		printf("Could not add friend, error: %d\n", err);
@@ -191,8 +196,9 @@ void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friendNum) {
     }
 }
 
-void friend_on_off(Tox *tox, uint32_t friendNum, 
-                   TOX_CONNECTION connection_status, void *user_data) {
+void friend_on_off(Tox *tox, uint32_t friendNum,
+                   TOX_CONNECTION connection_status,
+                   __attribute__((unused)) void *user_data) {
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
     if (connection_status == TOX_CONNECTION_NONE) {
@@ -202,8 +208,10 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     }
 }
 
-void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type, 
-                    const uint8_t *message, size_t length, void *user_data) {
+void friend_message(Tox *tox, uint32_t friendNum,
+                    __attribute__((unused)) TOX_MESSAGE_TYPE type,
+                    const uint8_t *message, size_t length,
+                    __attribute__((unused)) void *user_data) {
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
     printf("friend %d (%s) says: %s\n", friendNum, name, message);
@@ -326,9 +334,11 @@ void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type,
     free(name);
 }
 
-void file_recv(Tox *tox, uint32_t friendNum, uint32_t file_number, 
-               uint32_t kind, uint64_t file_size, const uint8_t *filename, 
-               size_t filename_length, void *user_data) {
+void file_recv(Tox *tox, uint32_t friendNum, uint32_t file_number,
+               uint32_t kind, __attribute__((unused)) uint64_t file_size,
+               __attribute__((unused)) const uint8_t *filename,
+               __attribute__((unused)) size_t filename_length,
+               __attribute__((unused)) void *user_data) {
 	if (kind == TOX_FILE_KIND_AVATAR) {
 		return;
 	}
@@ -342,7 +352,7 @@ void file_recv(Tox *tox, uint32_t friendNum, uint32_t file_number,
 }
 
 void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled, 
-          bool video_enabled, void *user_data) {
+          bool video_enabled, __attribute__((unused)) void *user_data) {
 	TOXAV_ERR_ANSWER err;
     toxav_answer(toxAV, friendNum, audio_enabled ? audio_bitrate : 0, 
                  video_enabled ? video_bitrate : 0, &err);
@@ -354,7 +364,7 @@ void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
 }
 
 void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state, 
-                void *user_data) {
+                __attribute__((unused)) void *user_data) {
 	if (state & TOXAV_FRIEND_CALL_STATE_FINISHED) {
 		printf("Call with friend %d finished\n", friendNum);
 		return;
@@ -377,7 +387,7 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
 void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum, 
                          const int16_t *pcm, size_t sample_count, 
                          uint8_t channels, uint32_t sampling_rate, 
-                         void *user_data) {
+                         __attribute__((unused)) void *user_data) {
 	TOXAV_ERR_SEND_FRAME err;
 	toxav_audio_send_frame(toxAV, friendNum, pcm, sample_count, channels, 
                            sampling_rate, &err);
@@ -388,10 +398,11 @@ void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum,
 	}
 }
 
-void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width, 
-                         uint16_t height, const uint8_t *y, const uint8_t *u, 
-                         const uint8_t *v, int32_t ystride, int32_t ustride, 
-                         int32_t vstride, void *user_data) {
+void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
+                         uint16_t height, const uint8_t *y, const uint8_t *u,
+                         const uint8_t *v, int32_t ystride, int32_t ustride,
+                         int32_t vstride,
+                         __attribute__((unused)) void *user_data) {
 	ystride = abs(ystride);
 	ustride = abs(ustride);
 	vstride = abs(vstride);
@@ -428,7 +439,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
 	}
 }
 
-static void handle_signal(int sig) {
+static void handle_signal(__attribute__((unused)) int sig) {
 	signal_exit = true;
 }
 
@@ -488,14 +499,19 @@ int main(void) {
 
 
 	TOX_ERR_BOOTSTRAP err2;
-
     DHT_node nodes[] = {
-        {"nodes.tox.chat",  33445, "788237D34978D1D5BD822F0A5BEBD2C53C64CC31CD3149350EE27D4D9A2F9B6B", {0}},
-        {"144.76.60.215",   33445, "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F", {0}},
-        {"23.226.230.47",   33445, "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074", {0}},
-        {"178.21.112.187",  33445, "4B2C19E924972CB9B57732FB172F8A8604DE13EEDA2A6234E348983344B23057", {0}},
-        {"195.154.119.113", 33445, "E398A69646B8CEACA9F0B84F553726C1C49270558C57DF5F3C368F05A7D71354", {0}},
-        {"192.210.149.121", 33445, "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67", {0}}
+        {"nodes.tox.chat",  33445,
+    "788237D34978D1D5BD822F0A5BEBD2C53C64CC31CD3149350EE27D4D9A2F9B6B", {0}},
+        {"144.76.60.215",   33445,
+    "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F", {0}},
+        {"23.226.230.47",   33445,
+    "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074", {0}},
+        {"178.21.112.187",  33445,
+    "4B2C19E924972CB9B57732FB172F8A8604DE13EEDA2A6234E348983344B23057", {0}},
+        {"195.154.119.113", 33445,
+    "E398A69646B8CEACA9F0B84F553726C1C49270558C57DF5F3C368F05A7D71354", {0}},
+        {"192.210.149.121", 33445,
+    "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67", {0}}
     };
 
     for (size_t i = 0; i < (sizeof(nodes)/sizeof(DHT_node)); i++) {
