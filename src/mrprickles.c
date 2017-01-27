@@ -208,11 +208,12 @@ void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type,
     friend_name_from_num(&name, tox, friendNum);
     printf("friend %d (%s) says: %s\n", friendNum, name, message);
     // dan: what is the point of dest_msg ? get rid of it?
+    // the point is that it's a char[] instead of a const uint8_t *
 	char dest_msg[length + 1];
 	dest_msg[length] = '\0';
 	memcpy(dest_msg, message, length);
 
-	if (!strcmp("info", dest_msg)) {
+	if (!strncmp("info", dest_msg, 4)) {
 		char time_msg[TOX_MAX_MESSAGE_LENGTH];
 		char time_str[64];
 		uint64_t cur_time = time(NULL);
@@ -233,7 +234,7 @@ void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type,
                                 (uint8_t *)info_msg, strlen(info_msg), NULL);
 
 
-    } else if (!strcmp("friends", dest_msg)) {
+    } else if (!strncmp("friends", dest_msg, 7)) {
         size_t friendCount = tox_self_get_friend_list_size(tox);
         uint32_t friendList[friendCount];
         tox_self_get_friend_list(tox, friendList);
@@ -293,27 +294,27 @@ void friend_message(Tox *tox, uint32_t friendNum, TOX_MESSAGE_TYPE type,
         tox_self_set_status_message(tox, (uint8_t *) new_status,
                                     strlen(new_status),NULL);
         last_info_change = time(NULL);
-	} else if (!strcmp("busy", dest_msg)) {
+	} else if (!strncmp("busy", dest_msg, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_BUSY);
 		const char *msg = "leave me alone; i'm busy."; 
 		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
                                 (uint8_t *) msg, strlen(msg), NULL);
-	} else if (!strcmp("away", dest_msg)) {
+	} else if (!strncmp("away", dest_msg, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_AWAY);
 		const char *msg = "i'm not here right now."; 
 		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
                                 (uint8_t *) msg, strlen(msg), NULL);
-	} else if (!strcmp("online", dest_msg)) {
+	} else if (!strncmp("online", dest_msg, 6)) {
         tox_self_set_status(tox, TOX_USER_STATUS_NONE);
 		const char *msg = "sup? sup brah?"; 
 		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
                                 (uint8_t *) msg, strlen(msg), NULL);
-	} else if (!strcmp("callme", dest_msg)) {
+	} else if (!strncmp("callme", dest_msg, 6)) {
 		toxav_call(g_toxAV, friendNum, audio_bitrate, 0, NULL);
 	} else if (!strcmp ("videocallme", dest_msg)) {
 		toxav_call (g_toxAV, friendNum, audio_bitrate, video_bitrate, 
                     NULL);
-	} else if (!strcmp ("help", dest_msg)) {
+	} else if (!strncmp ("help", dest_msg, 4)) {
 		/* Send usage instructions in new message. */
 		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
                                (uint8_t*) help_msg, strlen (help_msg), NULL);
@@ -431,7 +432,7 @@ static void handle_signal(int sig) {
 	signal_exit = true;
 }
 
-int main(int argc, char *argv[]) {
+int main(void) {
 	signal(SIGINT, handle_signal);
 	start_time = time(NULL);
 
