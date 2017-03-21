@@ -13,8 +13,11 @@
 #include <tox/toxav.h>
 #include <sodium.h>
 
+// reset name and status message every 60 minutes
+#define RESET_INFO_DELAY 3600
+
 // static uint64_t last_purge;
-static uint64_t last_info_change;
+static uint64_t last_info_change; // 0 when info unchanged, a time otherwise
 static uint64_t start_time;
 static bool signal_exit = false;
 
@@ -52,13 +55,18 @@ bool save_profile(Tox *tox) {
 }
 
 void reset_info(Tox * tox) {
-    const char *name = "Mr. Prickles";
-    const char *status = "a humorously-named cactus from australia";
+    static const char *name = "Mr. Prickles";
+    static const char *status = "a humorously-named cactus from australia";
+
+    puts("resetting info");
 
     tox_self_set_name(tox, (uint8_t *)name, strlen(name), NULL);
     tox_self_set_status_message(tox, (uint8_t *)status, strlen(status), NULL);
 
     save_profile(tox);
+
+    // set last_info_change to 0 to mean info hasn't been changed
+    last_info_change = 0;
 }
 
 static void * run_toxav(void * arg) {
@@ -78,9 +86,9 @@ static void * run_tox(void * arg) {
     for (long long interval; true; usleep(interval)) {
 		tox_iterate(tox, NULL);
 
-        // reset name and status message every 60 minutes 
 		curr_time = time(NULL);
-		if (last_info_change == 0 || curr_time - last_info_change > 3600) {
+		if (last_info_change &&
+                curr_time - last_info_change > RESET_INFO_DELAY) {
 			reset_info(tox);
 		}
 
@@ -478,9 +486,6 @@ int main(void) {
         }
 
         reset_info(g_tox);
-
-        // set last_info_change to 0 to mean info hasn't been changed
-        last_info_change = 0;
 	}
 
 	tox_callback_self_connection_status(g_tox, self_connection_status);
