@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <pwd.h>
 #include <unistd.h>
@@ -37,6 +38,21 @@ typedef struct DHT_node {
 
 static const char *help_msg = "list of commands:\ninfo: show stats.\ncallme: launch an audio call.\nvideocallme: launch a video call.\nonline/away/busy: change my user status\nname: change my name\nstatus: change my status message";
 
+void logger(bool timestamp, const char * format, ...) {
+    va_list ap;
+    time_t timey = time(NULL);
+    char timestr[50];
+
+    if (timestamp) {
+        strftime(timestr, sizeof(timestr), "[%b %d %T] ", localtime(&timey));
+        fputs(timestr, stdout);
+    }
+
+    va_start(ap, format);
+    vprintf(format, ap);
+    va_end(ap);
+}
+
 bool save_profile(Tox *tox) {
 	uint32_t save_size = tox_get_savedata_size(tox);
 	uint8_t save_data[save_size];
@@ -49,7 +65,7 @@ bool save_profile(Tox *tox) {
 		fclose(file);
 		return true;
 	} else {
-		printf("Could not write data to disk\n");
+		logger(true, "Could not write data to disk\n");
 		return false;
 	}
 }
@@ -115,7 +131,7 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options) {
 
 	if (! file) {
         // this should never happen... 
-        printf("could not open file %s\n", data_filename);
+        logger(true, "could not open file %s\n", data_filename);
         return TOX_ERR_NEW_LOAD_BAD_FORMAT;
     }
 
@@ -159,9 +175,9 @@ void self_connection_status(__attribute__((unused)) Tox * tox,
                             TOX_CONNECTION status,
                             __attribute__((unused)) void *userData) {
 	if (status == TOX_CONNECTION_NONE) {
-		printf("Lost connection to the tox network\n");
+		logger(true, "Lost connection to the tox network\n");
 	} else {
-		printf("Connected to the tox network, status: %d\n", status);
+		logger(true, "Connected to the tox network, status: %d\n", status);
 	}
 }
 
@@ -171,12 +187,12 @@ void friend_request(Tox *tox, const uint8_t *public_key,
                     __attribute__((unused)) void * user_data) {
 	TOX_ERR_FRIEND_ADD err;
 	tox_friend_add_norequest(tox, public_key, &err);
-    printf("%s\n", message);
+    logger(true, "received friend request: %s\n", message);
 
 	if (err != TOX_ERR_FRIEND_ADD_OK) {
-		printf("Could not add friend, error: %d\n", err);
+		logger(true, "Could not add friend, error: %d\n", err);
 	} else {
-		printf("Added to our friend list\n");
+		logger(true, "Added to our friend list\n");
 	}
 
 	save_profile(tox);
@@ -189,7 +205,7 @@ void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friendNum) {
     if (err != TOX_ERR_FRIEND_QUERY_OK) {
         // what should we do?
         if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
-            printf("no friend %u.\n", friendNum);
+            logger(true, "no friend %u.\n", friendNum);
         } else {
             puts("how did this happen?");
         }
@@ -210,9 +226,9 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
     if (connection_status == TOX_CONNECTION_NONE) {
-        printf("friend %d (%s) went offline\n", friendNum, name);
+        logger(true, "friend %d (%s) went offline\n", friendNum, name);
     } else {
-        printf("friend %d (%s) came online\n", friendNum, name);
+        logger(true, "friend %d (%s) came online\n", friendNum, name);
     }
 }
 
@@ -222,7 +238,7 @@ void friend_message(Tox *tox, uint32_t friendNum,
                     __attribute__((unused)) void *user_data) {
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
-    printf("friend %d (%s) says: %s\n", friendNum, name, message);
+    logger(true, "friend %d (%s) says: %s\n", friendNum, name, message);
     // dan: what is the point of dest_msg ? get rid of it?
     // the point is that it's a char[] instead of a const uint8_t *
 	char dest_msg[length + 1];
@@ -260,7 +276,7 @@ void friend_message(Tox *tox, uint32_t friendNum,
             size_t nameSize = tox_friend_get_name_size(tox, i, &err);
             if (err != TOX_ERR_FRIEND_QUERY_OK) {
                 if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
-                    printf("no friend %u.", i);
+                    logger(true, "no friend %u.", i);
                 } else {
                     puts("wait, what? this shouldn't happen.");
                 }
@@ -366,7 +382,7 @@ void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
                  video_enabled ? video_bitrate : 0, &err);
 
 	if (err != TOXAV_ERR_ANSWER_OK) {
-		printf("could not answer call, friend: %d, error: %d\n", 
+		logger(true, "could not answer call, friend: %d, error: %d\n", 
                friendNum, err);
 	}
 }
@@ -374,10 +390,10 @@ void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
 void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state, 
                 __attribute__((unused)) void *user_data) {
 	if (state & TOXAV_FRIEND_CALL_STATE_FINISHED) {
-		printf("Call with friend %d finished\n", friendNum);
+		logger(true, "Call with friend %d finished\n", friendNum);
 		return;
 	} else if (state & TOXAV_FRIEND_CALL_STATE_ERROR) {
-		printf("Call with friend %d errored\n", friendNum);
+		logger(true, "Call with friend %d errored\n", friendNum);
 		return;
 	}
 
@@ -388,7 +404,7 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
 	toxav_bit_rate_set(toxAV, friendNum, send_audio ? audio_bitrate : 0,
                        send_video ? video_bitrate : 0, NULL);
 
-	printf("Call state for friend %d changed to %d: audio: %d, video: %d\n", 
+	logger(true, "Call state for friend %d changed to %d: audio: %d, video: %d\n", 
            friendNum, state, send_audio, send_video);
 }
 
@@ -401,7 +417,7 @@ void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum,
                            sampling_rate, &err);
 
 	if (err != TOXAV_ERR_SEND_FRAME_OK) {
-		printf("Could not send audio frame to friend: %d, error: %d\n", 
+		logger(true, "Could not send audio frame to friend: %d, error: %d\n", 
                friendNum, err);
 	}
 }
@@ -416,7 +432,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
 	vstride = abs(vstride);
 
 	if (ystride < width || ustride < width / 2 || vstride < width / 2) {
-		printf("wtf\n");
+		logger(true, "wtf\n");
 		return;
 	}
 
@@ -442,7 +458,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
 	free(v_dest);
 
 	if (err != TOXAV_ERR_SEND_FRAME_OK) {
-		printf("Could not send video frame to friend: %d, error: %d\n", 
+		logger(true, "Could not send video frame to friend: %d, error: %d\n", 
                friendNum, err);
 	}
 }
@@ -470,18 +486,18 @@ int main(void) {
 	if (file_exists(data_filename)) {
 		err = load_profile(&g_tox, &options);
         if (err == TOX_ERR_NEW_OK) {
-			printf("Loaded data from %s\n", data_filename);
+			logger(true, "Loaded data from %s\n", data_filename);
 		} else {
-			printf("Failed to load data from disk: error code%d\n", err);
+			logger(true, "Failed to load data from disk: error code%d\n", err);
 			return -1;
 		}
 	} else {
-		printf("Creating a new profile\n");
+		puts("Creating a new profile");
 
 		g_tox = tox_new(&options, &err);
 
         if (err != TOX_ERR_NEW_OK) {
-            printf("Error at tox_new, error: %d\n", err);
+            logger(true, "Error at tox_new, error: %d\n", err);
             return -1;
         }
 
@@ -520,7 +536,7 @@ int main(void) {
     };
 
     for (size_t i = 0; i < (sizeof(nodes)/sizeof(DHT_node)); i++) {
-        printf("connecting to %s:%d...", nodes[i].ip, nodes[i].port);
+        logger(true, "connecting to %s:%d...", nodes[i].ip, nodes[i].port);
         fflush(stdout);
         sodium_hex2bin(nodes[i].key_bin, sizeof(nodes[i].key_bin),
                        nodes[i].key_hex, sizeof(nodes[i].key_hex)-1, NULL, 
@@ -531,12 +547,12 @@ int main(void) {
             puts(" success!");
         } 
         if (err2 != TOX_ERR_BOOTSTRAP_OK) {
-            printf("\nCould not bootstrap, error: %d\n", err2);
+            logger(true, "\nCould not bootstrap, error: %d\n", err2);
         }
     }
 
 	if (err2 != TOX_ERR_BOOTSTRAP_OK) {
-		printf("Could not bootstrap, error: %d\n", err2);
+		logger(true, "Could not bootstrap, error: %d\n", err2);
 		return -1;
 	}
 
@@ -548,7 +564,7 @@ int main(void) {
 	toxav_callback_video_receive_frame(g_toxAV, video_receive_frame, NULL);
 
 	if (err3 != TOXAV_ERR_NEW_OK) {
-		printf("Error at toxav_new: %d\n", err3);
+		logger(true, "Error at toxav_new: %d\n", err3);
 		return -1;
 	}
 
@@ -562,7 +578,7 @@ int main(void) {
 		pause();
 	}
 
-	printf("Killing tox and saving profile\n");
+	logger(true, "Killing tox and saving profile\n");
 
 	pthread_cancel(tox_thread);
 	pthread_cancel(toxav_thread);
