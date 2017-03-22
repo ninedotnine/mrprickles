@@ -51,6 +51,8 @@ void logger(bool timestamp, const char * format, ...) {
     va_start(ap, format);
     vprintf(format, ap);
     va_end(ap);
+
+    putchar('\n');
 }
 
 bool save_profile(Tox *tox) {
@@ -65,7 +67,7 @@ bool save_profile(Tox *tox) {
 		fclose(file);
 		return true;
 	} else {
-		logger(true, "Could not write data to disk\n");
+		logger(true, "Could not write data to disk");
 		return false;
 	}
 }
@@ -131,7 +133,7 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options) {
 
 	if (! file) {
         // this should never happen... 
-        logger(true, "could not open file %s\n", data_filename);
+        logger(true, "could not open file %s", data_filename);
         return TOX_ERR_NEW_LOAD_BAD_FORMAT;
     }
 
@@ -175,9 +177,9 @@ void self_connection_status(__attribute__((unused)) Tox * tox,
                             TOX_CONNECTION status,
                             __attribute__((unused)) void *userData) {
 	if (status == TOX_CONNECTION_NONE) {
-		logger(true, "Lost connection to the tox network\n");
+		logger(true, "Lost connection to the tox network");
 	} else {
-		logger(true, "Connected to the tox network, status: %d\n", status);
+		logger(true, "Connected to the tox network, status: %d", status);
 	}
 }
 
@@ -187,12 +189,12 @@ void friend_request(Tox *tox, const uint8_t *public_key,
                     __attribute__((unused)) void * user_data) {
 	TOX_ERR_FRIEND_ADD err;
 	tox_friend_add_norequest(tox, public_key, &err);
-    logger(true, "received friend request: %s\n", message);
+    logger(true, "received friend request: %s", message);
 
 	if (err != TOX_ERR_FRIEND_ADD_OK) {
-		logger(true, "Could not add friend, error: %d\n", err);
+		logger(true, "Could not add friend, error: %d", err);
 	} else {
-		logger(true, "Added to our friend list\n");
+		logger(true, "Added to our friend list");
 	}
 
 	save_profile(tox);
@@ -205,7 +207,7 @@ void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friendNum) {
     if (err != TOX_ERR_FRIEND_QUERY_OK) {
         // what should we do?
         if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
-            logger(true, "no friend %u.\n", friendNum);
+            logger(true, "no friend %u.", friendNum);
         } else {
             puts("how did this happen?");
         }
@@ -226,9 +228,9 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
     if (connection_status == TOX_CONNECTION_NONE) {
-        logger(true, "friend %d (%s) went offline\n", friendNum, name);
+        logger(true, "friend %d (%s) went offline", friendNum, name);
     } else {
-        logger(true, "friend %d (%s) came online\n", friendNum, name);
+        logger(true, "friend %d (%s) came online", friendNum, name);
     }
 }
 
@@ -238,7 +240,7 @@ void friend_message(Tox *tox, uint32_t friendNum,
                     __attribute__((unused)) void *user_data) {
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
-    logger(true, "friend %d (%s) says: %s\n", friendNum, name, message);
+    logger(true, "friend %d (%s) says: %s", friendNum, name, message);
     // dan: what is the point of dest_msg ? get rid of it?
     // the point is that it's a char[] instead of a const uint8_t *
 	char dest_msg[length + 1];
@@ -382,7 +384,7 @@ void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
                  video_enabled ? video_bitrate : 0, &err);
 
 	if (err != TOXAV_ERR_ANSWER_OK) {
-		logger(true, "could not answer call, friend: %d, error: %d\n", 
+		logger(true, "could not answer call, friend: %d, error: %d", 
                friendNum, err);
 	}
 }
@@ -390,10 +392,10 @@ void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
 void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state, 
                 __attribute__((unused)) void *user_data) {
 	if (state & TOXAV_FRIEND_CALL_STATE_FINISHED) {
-		logger(true, "Call with friend %d finished\n", friendNum);
+		logger(true, "Call with friend %d finished", friendNum);
 		return;
 	} else if (state & TOXAV_FRIEND_CALL_STATE_ERROR) {
-		logger(true, "Call with friend %d errored\n", friendNum);
+		logger(true, "Call with friend %d errored", friendNum);
 		return;
 	}
 
@@ -404,7 +406,7 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
 	toxav_bit_rate_set(toxAV, friendNum, send_audio ? audio_bitrate : 0,
                        send_video ? video_bitrate : 0, NULL);
 
-	logger(true, "Call state for friend %d changed to %d: audio: %d, video: %d\n", 
+	logger(true, "Call state for friend %d changed to %d: audio: %d, video: %d", 
            friendNum, state, send_audio, send_video);
 }
 
@@ -417,7 +419,7 @@ void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum,
                            sampling_rate, &err);
 
 	if (err != TOXAV_ERR_SEND_FRAME_OK) {
-		logger(true, "Could not send audio frame to friend: %d, error: %d\n", 
+		logger(true, "Could not send audio frame to friend: %d, error: %d", 
                friendNum, err);
 	}
 }
@@ -432,7 +434,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
 	vstride = abs(vstride);
 
 	if (ystride < width || ustride < width / 2 || vstride < width / 2) {
-		logger(true, "wtf\n");
+		logger(true, "wtf");
 		return;
 	}
 
@@ -458,7 +460,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
 	free(v_dest);
 
 	if (err != TOXAV_ERR_SEND_FRAME_OK) {
-		logger(true, "Could not send video frame to friend: %d, error: %d\n", 
+		logger(true, "Could not send video frame to friend: %d, error: %d", 
                friendNum, err);
 	}
 }
@@ -486,9 +488,9 @@ int main(void) {
 	if (file_exists(data_filename)) {
 		err = load_profile(&g_tox, &options);
         if (err == TOX_ERR_NEW_OK) {
-			logger(true, "Loaded data from %s\n", data_filename);
+			logger(true, "Loaded data from %s", data_filename);
 		} else {
-			logger(true, "Failed to load data from disk: error code%d\n", err);
+			logger(true, "Failed to load data from disk: error code%d", err);
 			return -1;
 		}
 	} else {
@@ -497,7 +499,7 @@ int main(void) {
 		g_tox = tox_new(&options, &err);
 
         if (err != TOX_ERR_NEW_OK) {
-            logger(true, "Error at tox_new, error: %d\n", err);
+            logger(true, "Error at tox_new, error: %d", err);
             return -1;
         }
 
@@ -544,15 +546,15 @@ int main(void) {
         bool success = tox_bootstrap(g_tox, nodes[i].ip, nodes[i].port, 
                                      nodes[i].key_bin, &err2);
         if (success) {
-            puts(" success!");
+            logger(true, " success! what does this even mean?");
         } 
         if (err2 != TOX_ERR_BOOTSTRAP_OK) {
-            logger(true, "\nCould not bootstrap, error: %d\n", err2);
+            logger(true, "\nCould not bootstrap, error: %d", err2);
         }
     }
 
 	if (err2 != TOX_ERR_BOOTSTRAP_OK) {
-		logger(true, "Could not bootstrap, error: %d\n", err2);
+		logger(true, "Could not bootstrap, error: %d", err2);
 		return -1;
 	}
 
@@ -564,7 +566,7 @@ int main(void) {
 	toxav_callback_video_receive_frame(g_toxAV, video_receive_frame, NULL);
 
 	if (err3 != TOXAV_ERR_NEW_OK) {
-		logger(true, "Error at toxav_new: %d\n", err3);
+		logger(true, "Error at toxav_new: %d", err3);
 		return -1;
 	}
 
@@ -578,7 +580,7 @@ int main(void) {
 		pause();
 	}
 
-	logger(true, "Killing tox and saving profile\n");
+	logger(true, "Killing tox and saving profile");
 
 	pthread_cancel(tox_thread);
 	pthread_cancel(toxav_thread);
