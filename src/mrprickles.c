@@ -582,8 +582,8 @@ int main(void) {
 
 	logger(true, "Killing tox and saving profile");
 
-	pthread_cancel(tox_thread);
 	pthread_cancel(toxav_thread);
+	pthread_cancel(tox_thread);
 
 	save_profile(g_tox);
 	toxav_kill(g_toxAV);
