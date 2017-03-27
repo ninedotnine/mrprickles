@@ -377,25 +377,29 @@ void file_recv(Tox *tox, uint32_t friendNum, uint32_t file_number,
 
 void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled, 
           bool video_enabled, __attribute__((unused)) void *user_data) {
+    uint8_t * friendName;
+    friend_name_from_num(&friendName, toxav_get_tox(toxAV), friendNum);
 	TOXAV_ERR_ANSWER err;
     toxav_answer(toxAV, friendNum, audio_enabled ? audio_bitrate : 0, 
                  video_enabled ? video_bitrate : 0, &err);
 
 	if (err == TOXAV_ERR_ANSWER_OK) {
-        logger("answered call from friend %d.", friendNum);
+        logger("answered call from friend %d (%s).", friendNum, friendName);
 	} else {
-		logger("could not answer call, friend: %d, error: %d", 
-               friendNum, err);
+		logger("could not answer call, friend: %d (%s), error: %d", 
+               friendNum, friendName, err);
     }
 }
 
 void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state, 
                 __attribute__((unused)) void *user_data) {
+    uint8_t * friendName;
+    friend_name_from_num(&friendName, toxav_get_tox(toxAV), friendNum);
 	if (state & TOXAV_FRIEND_CALL_STATE_FINISHED) {
-		logger("Call with friend %d finished", friendNum);
+		logger("Call with friend %d (%s) finished", friendNum, friendName);
 		return;
 	} else if (state & TOXAV_FRIEND_CALL_STATE_ERROR) {
-		logger("Call with friend %d errored", friendNum);
+		logger("Call with friend %d (%s) errored", friendNum, friendName);
 		return;
 	}
 
@@ -406,8 +410,8 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
 	toxav_bit_rate_set(toxAV, friendNum, send_audio ? audio_bitrate : 0,
                        send_video ? video_bitrate : 0, NULL);
 
-	logger("Call state for friend %d changed to %d: audio: %d, video: %d", 
-           friendNum, state, send_audio, send_video);
+	logger("Call state for friend %d (%s) changed to %d: audio: %d, video: %d",
+           friendNum, friendName, state, send_audio, send_video);
 }
 
 void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum, 
@@ -490,7 +494,7 @@ int main(void) {
         if (err == TOX_ERR_NEW_OK) {
 			logger("Loaded data from %s", data_filename);
 		} else {
-			logger("Failed to load data from disk: error code%d", err);
+			logger("Failed to load data from disk: error code %d", err);
 			return -1;
 		}
 	} else {
