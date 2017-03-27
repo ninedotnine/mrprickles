@@ -238,7 +238,7 @@ void friend_message(Tox *tox, uint32_t friendNum,
         __attribute__((unused)) void *user_data) {
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
-    logger("friend %d (%s) says: %s", friendNum, name, message);
+    logger("\033[1mfriend %d (%s) says: %s\033[0m", friendNum, name, message);
     // dan: what is the point of dest_msg ? get rid of it?
     // the point is that it's a char[] instead of a const uint8_t *
     char dest_msg[length + 1];
