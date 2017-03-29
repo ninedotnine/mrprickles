@@ -119,7 +119,7 @@ static void get_elapsed_time_str(char *buf, int bufsize, uint64_t secs) {
     long unsigned int hours = (secs / 3600) % 24;
     long unsigned int days = (secs / 3600) / 24;
 
-    snprintf(buf, bufsize, "%lud %luh %lum", days, hours, minutes);
+    snprintf(buf, bufsize, "uptime: %lud %luh %lum", days, hours, minutes);
 }
 
 bool file_exists(const char *filename) {
@@ -247,11 +247,9 @@ void friend_message(Tox *tox, uint32_t friendNum,
 
     if (!strncmp("info", dest_msg, 4)) {
         char time_msg[TOX_MAX_MESSAGE_LENGTH];
-        char time_str[64];
         uint64_t cur_time = time(NULL);
 
-        get_elapsed_time_str(time_str, sizeof(time_str), cur_time-start_time);
-        snprintf(time_msg, sizeof(time_msg), "uptime: %s", time_str);
+        get_elapsed_time_str(time_msg, sizeof(time_msg), cur_time-start_time);
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *)time_msg, strlen(time_msg), NULL);
         char friend_msg[100];
@@ -264,7 +262,6 @@ void friend_message(Tox *tox, uint32_t friendNum,
         const char *info_msg = "If you're experiencing issues, well..."; 
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *)info_msg, strlen(info_msg), NULL);
-
 
     } else if (!strncmp("friends", dest_msg, 7)) {
         size_t friendCount = tox_self_get_friend_list_size(tox);
