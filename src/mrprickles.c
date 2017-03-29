@@ -553,7 +553,7 @@ int main(void) {
             logger(" --> success! what does this even mean?");
         } 
         if (err2 != TOX_ERR_BOOTSTRAP_OK) {
-            logger("\nCould not bootstrap, error: %d", err2);
+            logger("Could not bootstrap, error: %d", err2);
         }
     }
 
