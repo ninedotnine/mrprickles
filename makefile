@@ -3,6 +3,8 @@ CFLAGS = -std=gnu99 -Wall -Wextra -g -pedantic
 FILES = src/mrprickles.c
 OUT_EXE = bin/mrprickles
 LIBS = -lpthread -lsodium -ltoxcore -ltoxav
+# DEBUGFLAGS = -fsanitize=thread -fsanitize=undefined
+DEBUGFLAGS = -fsanitize=address -fsanitize=undefined
 
 build:
 	mkdir -p bin
