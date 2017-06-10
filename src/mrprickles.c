@@ -341,8 +341,7 @@ void friend_message(Tox *tox, uint32_t friendNum,
     } else if (!strncmp("callme", dest_msg, 6)) {
         toxav_call(g_toxAV, friendNum, audio_bitrate, 0, NULL);
     } else if (!strcmp ("videocallme", dest_msg)) {
-        toxav_call (g_toxAV, friendNum, audio_bitrate, video_bitrate, 
-                NULL);
+        toxav_call(g_toxAV, friendNum, audio_bitrate, video_bitrate, NULL);
     } else if (!strncmp ("help", dest_msg, 4)) {
         /* Send usage instructions in new message. */
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
@@ -355,7 +354,7 @@ void friend_message(Tox *tox, uint32_t friendNum,
     free(name);
 }
 
-void file_recv(Tox *tox, uint32_t friendNum, uint32_t file_number,
+void file_recv(Tox *tox, uint32_t friendNum, uint32_t fileNum,
         uint32_t kind, __attribute__((unused)) uint64_t file_size,
         __attribute__((unused)) const uint8_t *filename,
         __attribute__((unused)) size_t filename_length,
@@ -364,8 +363,7 @@ void file_recv(Tox *tox, uint32_t friendNum, uint32_t file_number,
         return;
     }
 
-    tox_file_control(tox, friendNum, file_number, TOX_FILE_CONTROL_CANCEL, 
-            NULL);
+    tox_file_control(tox, friendNum, fileNum, TOX_FILE_CONTROL_CANCEL, NULL);
 
     const char *msg = "i don't want your dumb file.";
     tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
