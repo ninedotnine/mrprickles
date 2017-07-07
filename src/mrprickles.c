@@ -22,6 +22,7 @@
 static uint64_t last_info_change; // 0 when info unchanged, a time otherwise
 static uint64_t start_time;
 static bool signal_exit = false;
+static bool gameMode = false;
 
 static const int32_t audio_bitrate = 48;
 static const int32_t video_bitrate = 5000;
@@ -233,13 +234,8 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     }
 }
 
-void friend_message(Tox *tox, uint32_t friendNum,
-        __attribute__((unused)) TOX_MESSAGE_TYPE type,
-        const uint8_t *message, size_t length,
-        __attribute__((unused)) void *user_data) {
-    uint8_t *name;
-    friend_name_from_num(&name, tox, friendNum);
-    logger("\033[1mfriend %d (%s) says: %s\033[0m", friendNum, name, message);
+void reply_normal_message(Tox * tox, uint32_t friendNum, 
+                          const uint8_t * message, size_t length) {
     // dan: what is the point of dest_msg ? get rid of it?
     // the point is that it's a char[] instead of a const uint8_t *
     char dest_msg[length + 1];
@@ -343,6 +339,15 @@ void friend_message(Tox *tox, uint32_t friendNum,
         toxav_call(g_toxAV, friendNum, audio_bitrate, 0, NULL);
     } else if (!strcmp ("videocallme", dest_msg)) {
         toxav_call(g_toxAV, friendNum, audio_bitrate, video_bitrate, NULL);
+    } else if (!strncmp("new game", dest_msg, 8)) {
+		const char *msg = "beginning game..."; 
+        logger(msg);
+		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+                                (uint8_t *) msg, strlen(msg), NULL);
+//         pthread_t game_thread;
+//         game_starter 
+//         pthread_create(&game_thread, NULL, &play_game, tox);
+        gameMode = true;
     } else if (!strncmp ("help", dest_msg, 4)) {
         /* Send usage instructions in new message. */
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
@@ -360,7 +365,31 @@ void friend_message(Tox *tox, uint32_t friendNum,
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 message, length, NULL);
     }
+}
+
+void reply_game_message(Tox * tox, uint32_t friendNum, 
+                        const uint8_t * message, size_t length) {
+    const char *msg = "hahaha, this does nothing! turning game mode back off";
+    tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+            (uint8_t *) msg, strlen(msg), NULL);
+    logger(msg);
+    gameMode = false;
+}
+
+void friend_message(Tox *tox, uint32_t friendNum,
+        __attribute__((unused)) TOX_MESSAGE_TYPE type,
+        const uint8_t *message, size_t length,
+        __attribute__((unused)) void *user_data) {
+    uint8_t *name;
+    friend_name_from_num(&name, tox, friendNum);
+    logger("\033[1mfriend %d (%s) says: %s\033[0m", friendNum, name, message);
     free(name);
+
+    if (gameMode) {
+        reply_game_message(tox, friendNum, message, length);
+    } else {
+        reply_normal_message(tox, friendNum, message, length);
+    }
 }
 
 void file_recv(Tox *tox, uint32_t friendNum, uint32_t fileNum,
