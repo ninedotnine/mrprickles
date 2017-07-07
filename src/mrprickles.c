@@ -465,6 +465,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
 }
 
 static void handle_signal(__attribute__((unused)) int sig) {
+    logger("received SIGINT");
     signal_exit = true;
 }
 
@@ -569,14 +570,29 @@ int main(void) {
         return -1;
     }
 
+//     sigset_t sigset;
+//     sigemptyset(&sigset);
+//     sigaddset(&sigset, SIGINT);
+
+    struct sigaction new_action;
+
+    /* Set up the structure to specify the new action. */
+    new_action.sa_handler = handle_signal;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+
+    sigaction(SIGINT, &new_action, NULL);
+
     pthread_t tox_thread, toxav_thread;
     pthread_create(&tox_thread, NULL, &run_tox, g_tox);
     pthread_create(&toxav_thread, NULL, &run_toxav, g_toxAV);
+
 
     while (!signal_exit) {
         /* as i understand it, the call to sleep will be interrupted by sigint
            anyway. there is no need to waste cpu resources here...  */
         pause();
+//         sigsuspend(&sigset);
     }
 
     logger("Killing tox and saving profile");
