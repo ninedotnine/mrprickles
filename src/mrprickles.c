@@ -503,8 +503,14 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
     }
 }
 
-static void handle_signal(__attribute__((unused)) int sig) {
-    logger("received SIGINT");
+// static void handle_signal(__attribute__((unused)) int sig) {
+static void handle_signal(int sig) {
+    if (sig == SIGINT) {
+        logger("received SIGINT");
+    } else {
+        assert(sig == SIGTERM);
+        logger("received SIGTERM");
+    }
     signal_exit = true;
 }
 
@@ -620,6 +626,7 @@ int main(void) {
     new_action.sa_flags = 0;
 
     sigaction(SIGINT, &new_action, NULL);
+    sigaction(SIGTERM, &new_action, NULL);
 
     pthread_t tox_thread, toxav_thread;
     pthread_create(&tox_thread, NULL, &run_tox, g_tox);
