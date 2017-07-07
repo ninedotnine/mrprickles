@@ -509,7 +509,6 @@ static void handle_signal(__attribute__((unused)) int sig) {
 }
 
 int main(void) {
-    signal(SIGINT, handle_signal);
     start_time = time(NULL);
 
     TOX_ERR_NEW err = TOX_ERR_NEW_OK;
