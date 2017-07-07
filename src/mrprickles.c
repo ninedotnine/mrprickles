@@ -237,7 +237,7 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
 
 void reply_normal_message(Tox * tox, uint32_t friendNum, 
                           const uint8_t * message, size_t length) {
-    // dan: what is the point of dest_msg ? get rid of it?
+    // what is the point of dest_msg ? get rid of it?
     // the point is that it's a char[] instead of a const uint8_t *
     char dest_msg[length + 1];
     dest_msg[length] = '\0';
