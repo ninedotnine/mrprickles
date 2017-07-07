@@ -503,8 +503,8 @@ int main(void) {
             return -1;
         }
 
-        reset_info(g_tox);
     }
+    reset_info(g_tox);
 
     tox_callback_self_connection_status(g_tox, self_connection_status);
     tox_callback_friend_connection_status(g_tox, friend_on_off);
