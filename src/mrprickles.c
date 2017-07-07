@@ -303,6 +303,7 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
                 }
             }
 
+            free(name);
             tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
                     (uint8_t *) msg, strlen(msg), NULL);
         }
