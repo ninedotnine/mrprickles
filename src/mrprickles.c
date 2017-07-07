@@ -232,6 +232,7 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     } else {
         logger("friend %d (%s) came online", friendNum, name);
     }
+    free(name);
 }
 
 void reply_normal_message(Tox * tox, uint32_t friendNum, 
@@ -423,6 +424,7 @@ void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
         logger("could not answer call, friend: %d (%s), error: %d", 
                 friendNum, friendName, err);
     }
+    free(friendName);
 }
 
 void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state, 
@@ -446,6 +448,7 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
 
     logger("Call state for friend %d (%s) changed to %d: audio: %d, video: %d",
             friendNum, friendName, state, send_audio, send_video);
+    free(friendName);
 }
 
 void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum, 
