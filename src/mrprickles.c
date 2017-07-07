@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include <tox/tox.h>
 #include <tox/toxav.h>
@@ -346,9 +347,17 @@ void friend_message(Tox *tox, uint32_t friendNum,
         /* Send usage instructions in new message. */
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
                 (uint8_t*) help_msg, strlen (help_msg), NULL);
+    } else if (!strcmp ("suicide", dest_msg)) {
+        const char *msg = "so it has come to this...";
+        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+                (uint8_t *) msg, strlen(msg), NULL);
+        signal_exit = true;
+        int success = raise(SIGINT);
+        assert (success == 0);
+        logger("raised SIGINT");
     } else {
         /* Just repeat what has been said like the nymph Echo. */
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 message, length, NULL);
     }
     free(name);
