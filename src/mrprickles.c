@@ -370,7 +370,8 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
 }
 
 void reply_game_message(Tox * tox, uint32_t friendNum, 
-                        const uint8_t * message, size_t length) {
+                        __attribute__((unused)) const uint8_t * message,
+                        __attribute__((unused)) size_t length) {
     const char *msg = "hahaha, this does nothing! turning game mode back off";
     tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
             (uint8_t *) msg, strlen(msg), NULL);
