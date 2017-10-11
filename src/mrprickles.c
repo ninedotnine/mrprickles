@@ -363,7 +363,7 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
                     continue;
                 }
 
-                char pubkey_hex[TOX_PUBLIC_KEY_SIZE];
+                char pubkey_hex[TOX_PUBLIC_KEY_SIZE * 2];
                 to_hex(pubkey_hex, pubkey_bin, TOX_PUBLIC_KEY_SIZE);
                 snprintf(msg, sizeof(msg), "%u: %s %s", i, name, pubkey_hex);
                 puts(pubkey_hex);
