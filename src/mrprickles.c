@@ -55,6 +55,24 @@ void logger(const char * format, ...) {
     putchar('\n');
 }
 
+void to_hex(char *out, uint8_t *in, int size) {
+    /* stolen from uTox, merci */
+    while (size--) {
+        if (*in >> 4 < 0xA) {
+            *out++ = '0' + (*in >> 4);
+        } else {
+            *out++ = 'A' + (*in >> 4) - 0xA;
+        }
+
+        if ((*in & 0xf) < 0xA) {
+            *out++ = '0' + (*in & 0xF);
+        } else {
+            *out++ = 'A' + (*in & 0xF) - 0xA;
+        }
+        in++;
+    }
+}
+
 bool save_profile(Tox *tox) {
     uint32_t save_size = tox_get_savedata_size(tox);
     uint8_t save_data[save_size];
@@ -310,9 +328,56 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
         }
 
     } else if (!strcmp("keys", dest_msg)) {
-        const char *msg = "i'll show you mine if you show me yours."; 
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+        char *msg;
+        if (friendNum == 0) { /* friend 0 is considered the admin. */
+            msg = "you got it, boss.";
+            size_t friendCount = tox_self_get_friend_list_size(tox);
+            uint32_t friendList[friendCount];
+            tox_self_get_friend_list(tox, friendList);
+
+            for (uint32_t i = 0; i < friendCount; i++) {
+                TOX_ERR_FRIEND_QUERY err;
+                size_t nameSize = tox_friend_get_name_size(tox, i, &err);
+                if (err != TOX_ERR_FRIEND_QUERY_OK) {
+                    if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
+                        logger("no friend %u.", i);
+                    } else {
+                        puts("wait, what? this shouldn't happen.");
+                    }
+                    continue;
+                }
+
+                uint8_t *name;
+                friend_name_from_num(&name, tox, i);
+
+                // enough space for name, 3-digit number, pubkey
+                char msg[nameSize+85];
+
+                TOX_ERR_FRIEND_GET_PUBLIC_KEY err2;
+                uint8_t pubkey_bin[TOX_PUBLIC_KEY_SIZE];
+
+                bool ok = tox_friend_get_public_key(tox, i, pubkey_bin, &err2);
+                if ((ok != true)
+                        || (err2 != TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)) {
+                    logger("can't get friend %d's key.", i);
+                    continue;
+                }
+
+                char pubkey_hex[TOX_PUBLIC_KEY_SIZE];
+                to_hex(pubkey_hex, pubkey_bin, TOX_PUBLIC_KEY_SIZE);
+                snprintf(msg, sizeof(msg), "%u: %s %s", i, name, pubkey_hex);
+                puts(pubkey_hex);
+
+                tox_friend_send_message(tox, friendNum,
+                                        TOX_MESSAGE_TYPE_NORMAL,
+                                        (uint8_t *) msg, strlen(msg), NULL);
+                free(name);
+            }
+        } else {
+            msg = "i'll show you mine if you show me yours.";
+            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
+        }
     } else if (!strncmp("name ", dest_msg, 5) && sizeof(dest_msg) > 5) {
         char * new_name = dest_msg + 5;
         tox_self_set_name(tox, (uint8_t *) new_name, strlen(new_name), NULL);
