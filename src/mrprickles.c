@@ -150,7 +150,7 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options) {
     FILE *file = fopen(data_filename, "rb");
 
     if (! file) {
-        // this should never happen... 
+        // this should never happen...
         logger("could not open file %s", data_filename);
         return TOX_ERR_NEW_LOAD_BAD_FORMAT;
     }
@@ -182,7 +182,7 @@ uint32_t get_online_friend_count(Tox *tox) {
     tox_self_get_friend_list(tox, friends);
 
     for (uint32_t i = 0; i < friend_count; i++) {
-        if (tox_friend_get_connection_status(tox, friends[i], NULL) 
+        if (tox_friend_get_connection_status(tox, friends[i], NULL)
                 != TOX_CONNECTION_NONE) {
             online_friend_count++;
         }
@@ -253,7 +253,7 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     free(name);
 }
 
-void reply_normal_message(Tox * tox, uint32_t friendNum, 
+void reply_normal_message(Tox * tox, uint32_t friendNum,
                           const uint8_t * message, size_t length) {
     // what is the point of dest_msg ? get rid of it?
     // the point is that it's a char[] instead of a const uint8_t *
@@ -270,12 +270,12 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
                 (uint8_t *)time_msg, strlen(time_msg), NULL);
         char friend_msg[100];
         snprintf(friend_msg, sizeof(friend_msg), "friends: %zu (%d online)",
-                tox_self_get_friend_list_size(tox), 
+                tox_self_get_friend_list_size(tox),
                 get_online_friend_count(tox));
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *)friend_msg,strlen(friend_msg),NULL);
 
-        const char *info_msg = "If you're experiencing issues, well..."; 
+        const char *info_msg = "If you're experiencing issues, well...";
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *)info_msg, strlen(info_msg), NULL);
 
@@ -309,7 +309,7 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
             // enough space for name, 3-digit number, status
             char msg[nameSize+17];
 
-            if (tox_friend_get_connection_status(tox, friendList[i], NULL) 
+            if (tox_friend_get_connection_status(tox, friendList[i], NULL)
                     == TOX_CONNECTION_NONE) {
                 snprintf(msg, sizeof(msg), "%u: %s (offline)", i, name);
             } else {
@@ -323,7 +323,7 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
             }
 
             free(name);
-            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                     (uint8_t *) msg, strlen(msg), NULL);
         }
 
@@ -389,35 +389,35 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
         last_info_change = time(NULL);
     } else if (!strncmp("busy", dest_msg, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_BUSY);
-        const char *msg = "leave me alone; i'm busy."; 
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+        const char *msg = "leave me alone; i'm busy.";
+        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
     } else if (!strncmp("away", dest_msg, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_AWAY);
-        const char *msg = "i'm not here right now."; 
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+        const char *msg = "i'm not here right now.";
+        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
     } else if (!strncmp("online", dest_msg, 6)) {
         tox_self_set_status(tox, TOX_USER_STATUS_NONE);
-        const char *msg = "sup? sup brah?"; 
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+        const char *msg = "sup? sup brah?";
+        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
     } else if (!strncmp("callme", dest_msg, 6)) {
         toxav_call(g_toxAV, friendNum, audio_bitrate, 0, NULL);
     } else if (!strcmp ("videocallme", dest_msg)) {
         toxav_call(g_toxAV, friendNum, audio_bitrate, video_bitrate, NULL);
     } else if (!strncmp("new game", dest_msg, 8)) {
-		const char *msg = "beginning game..."; 
+		const char *msg = "beginning game...";
         logger(msg);
-		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                                 (uint8_t *) msg, strlen(msg), NULL);
 //         pthread_t game_thread;
-//         game_starter 
+//         game_starter
 //         pthread_create(&game_thread, NULL, &play_game, tox);
         gameMode = true;
     } else if (!strncmp ("help", dest_msg, 4)) {
         /* Send usage instructions in new message. */
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t*) help_msg, strlen (help_msg), NULL);
     } else if (!strcmp ("suicide", dest_msg)) {
         const char *msg = "so it has come to this...";
@@ -434,7 +434,7 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
     }
 }
 
-void reply_game_message(Tox * tox, uint32_t friendNum, 
+void reply_game_message(Tox * tox, uint32_t friendNum,
                         __attribute__((unused)) const uint8_t * message,
                         __attribute__((unused)) size_t length) {
     const char *msg = "hahaha, this does nothing! turning game mode back off";
@@ -472,28 +472,28 @@ void file_recv(Tox *tox, uint32_t friendNum, uint32_t fileNum,
     tox_file_control(tox, friendNum, fileNum, TOX_FILE_CONTROL_CANCEL, NULL);
 
     const char *msg = "i don't want your dumb file.";
-    tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL, 
+    tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
             (uint8_t*)msg, strlen(msg), NULL);
 }
 
-void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled, 
+void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
         bool video_enabled, __attribute__((unused)) void *user_data) {
     uint8_t * friendName;
     friend_name_from_num(&friendName, toxav_get_tox(toxAV), friendNum);
     TOXAV_ERR_ANSWER err;
-    toxav_answer(toxAV, friendNum, audio_enabled ? audio_bitrate : 0, 
+    toxav_answer(toxAV, friendNum, audio_enabled ? audio_bitrate : 0,
             video_enabled ? video_bitrate : 0, &err);
 
     if (err == TOXAV_ERR_ANSWER_OK) {
         logger("answered call from friend %d (%s).", friendNum, friendName);
     } else {
-        logger("could not answer call, friend: %d (%s), error: %d", 
+        logger("could not answer call, friend: %d (%s), error: %d",
                 friendNum, friendName, err);
     }
     free(friendName);
 }
 
-void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state, 
+void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
         __attribute__((unused)) void *user_data) {
     uint8_t * friendName;
     friend_name_from_num(&friendName, toxav_get_tox(toxAV), friendNum);
@@ -505,9 +505,9 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
         return;
     }
 
-    bool send_audio = (state & TOXAV_FRIEND_CALL_STATE_SENDING_A) 
+    bool send_audio = (state & TOXAV_FRIEND_CALL_STATE_SENDING_A)
         && (state & TOXAV_FRIEND_CALL_STATE_ACCEPTING_A);
-    bool send_video = state & TOXAV_FRIEND_CALL_STATE_SENDING_V 
+    bool send_video = state & TOXAV_FRIEND_CALL_STATE_SENDING_V
         && (state & TOXAV_FRIEND_CALL_STATE_ACCEPTING_V);
     toxav_bit_rate_set(toxAV, friendNum, send_audio ? audio_bitrate : 0,
             send_video ? video_bitrate : 0, NULL);
@@ -517,16 +517,16 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
     free(friendName);
 }
 
-void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum, 
-        const int16_t *pcm, size_t sample_count, 
-        uint8_t channels, uint32_t sampling_rate, 
+void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum,
+        const int16_t *pcm, size_t sample_count,
+        uint8_t channels, uint32_t sampling_rate,
         __attribute__((unused)) void *user_data) {
     TOXAV_ERR_SEND_FRAME err;
-    toxav_audio_send_frame(toxAV, friendNum, pcm, sample_count, channels, 
+    toxav_audio_send_frame(toxAV, friendNum, pcm, sample_count, channels,
             sampling_rate, &err);
 
     if (err != TOXAV_ERR_SEND_FRAME_OK) {
-        logger("Could not send audio frame to friend: %d, error: %d", 
+        logger("Could not send audio frame to friend: %d, error: %d",
                 friendNum, err);
     }
 }
@@ -559,7 +559,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
     }
 
     TOXAV_ERR_SEND_FRAME err;
-    toxav_video_send_frame(toxAV, friendNum, width, height, y_dest, 
+    toxav_video_send_frame(toxAV, friendNum, width, height, y_dest,
             u_dest, v_dest, &err);
 
     free(y_dest);
@@ -567,7 +567,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
     free(v_dest);
 
     if (err != TOXAV_ERR_SEND_FRAME_OK) {
-        logger("Could not send video frame to friend: %d, error: %d", 
+        logger("Could not send video frame to friend: %d, error: %d",
                 friendNum, err);
     }
 }
@@ -594,7 +594,7 @@ int main(void) {
 
     if ((homedir = getenv("HOME")) == NULL) {
         homedir = getpwuid(getuid())->pw_dir;
-    }   
+    }
 
     asprintf(&data_filename, "%s/.cache/tox_mrprickles", homedir);
 
@@ -628,7 +628,7 @@ int main(void) {
     uint8_t address_bin[TOX_ADDRESS_SIZE];
     tox_self_get_address(g_tox, (uint8_t *)address_bin);
     char address_hex[TOX_ADDRESS_SIZE * 2 + 1];
-    sodium_bin2hex(address_hex, sizeof(address_hex), address_bin, 
+    sodium_bin2hex(address_hex, sizeof(address_hex), address_bin,
             sizeof(address_bin));
 
     printf("%s\n", address_hex);
@@ -654,13 +654,13 @@ int main(void) {
         logger("connecting to %s:%d...", nodes[i].ip, nodes[i].port);
         fflush(stdout);
         sodium_hex2bin(nodes[i].key_bin, sizeof(nodes[i].key_bin),
-                nodes[i].key_hex, sizeof(nodes[i].key_hex)-1, NULL, 
+                nodes[i].key_hex, sizeof(nodes[i].key_hex)-1, NULL,
                 NULL, NULL);
-        bool success = tox_bootstrap(g_tox, nodes[i].ip, nodes[i].port, 
+        bool success = tox_bootstrap(g_tox, nodes[i].ip, nodes[i].port,
                 nodes[i].key_bin, &err2);
         if (success) {
             logger(" --> success! what does this even mean?");
-        } 
+        }
         if (err2 != TOX_ERR_BOOTSTRAP_OK) {
             logger("Could not bootstrap, error: %d", err2);
         }
