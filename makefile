@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -std=gnu99 -Wall -Wextra -g -pedantic
 FILES = src/mrprickles.c
 OUT_EXE = bin/mrprickles
-LIBS = -lpthread -lsodium -ltoxcore -ltoxav
+LIBS = -lpthread -lsodium -ltoxcore
 # DEBUGFLAGS = -fsanitize=thread -fsanitize=undefined
 DEBUGFLAGS = -fsanitize=address -fsanitize=undefined
 

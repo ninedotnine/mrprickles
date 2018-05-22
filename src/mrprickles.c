@@ -509,8 +509,19 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
         && (state & TOXAV_FRIEND_CALL_STATE_ACCEPTING_A);
     bool send_video = state & TOXAV_FRIEND_CALL_STATE_SENDING_V
         && (state & TOXAV_FRIEND_CALL_STATE_ACCEPTING_V);
-    toxav_bit_rate_set(toxAV, friendNum, send_audio ? audio_bitrate : 0,
-            send_video ? video_bitrate : 0, NULL);
+
+    TOXAV_ERR_BIT_RATE_SET audio_err;
+    TOXAV_ERR_BIT_RATE_SET video_err;
+    toxav_audio_set_bit_rate(toxAV, friendNum, send_audio ? audio_bitrate : 0,
+                             &audio_err);
+    if (audio_err != TOXAV_ERR_BIT_RATE_SET_OK) {
+        logger("audio bit rate failed to set.");
+    }
+    toxav_video_set_bit_rate(toxAV, friendNum, send_audio ? video_bitrate : 0,
+                             &video_err);
+    if (audio_err != TOXAV_ERR_BIT_RATE_SET_OK) {
+        logger("video bit rate failed to set.");
+    }
 
     logger("Call state for friend %d (%s) changed to %d: audio: %d, video: %d",
             friendNum, friendName, state, send_audio, send_video);
