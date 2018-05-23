@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=gnu99 -Wall -Wextra -g -pedantic
+CFLAGS = -std=gnu99 -Wall -Wextra -g -pedantic -march=native -O2
 FILES = src/mrprickles.c
 OUT_EXE = bin/mrprickles
 LIBS = -lpthread -lsodium -ltoxcore
