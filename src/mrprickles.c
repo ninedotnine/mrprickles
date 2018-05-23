@@ -670,24 +670,24 @@ int main(void) {
     };
 
     for (size_t i = 0; i < (sizeof(nodes)/sizeof(DHT_node)); i++) {
-        logger("connecting to %s:%d...", nodes[i].ip, nodes[i].port);
+        logger("requesting nodes from %s:%d...", nodes[i].ip, nodes[i].port);
         fflush(stdout);
         sodium_hex2bin(nodes[i].key_bin, sizeof(nodes[i].key_bin),
                 nodes[i].key_hex, sizeof(nodes[i].key_hex)-1, NULL,
                 NULL, NULL);
         bool success = tox_bootstrap(g_tox, nodes[i].ip, nodes[i].port,
                 nodes[i].key_bin, &err2);
-        if (success) {
-            logger(" --> success! what does this even mean?");
+        if (! success) {
+            if (err2 == TOX_ERR_BOOTSTRAP_BAD_HOST) {
+                logger(" --> could not resolve host: %s", nodes[i].ip);
+            } else {
+                logger(" --> was not able to bootstrap: %s", nodes[i].ip);
+            }
         }
         if (err2 != TOX_ERR_BOOTSTRAP_OK) {
-            logger("Could not bootstrap, error: %d", err2);
+            assert (! success);
+            logger(" --> Could not bootstrap, error code: %d", err2);
         }
-    }
-
-    if (err2 != TOX_ERR_BOOTSTRAP_OK) {
-        logger("Could not bootstrap, error: %d", err2);
-        return -1;
     }
 
     TOXAV_ERR_NEW err3;
