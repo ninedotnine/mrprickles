@@ -207,7 +207,7 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options) {
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    uint8_t *save_data = (uint8_t *)malloc(file_size * sizeof(uint8_t));
+    uint8_t *save_data = calloc(file_size, sizeof(uint8_t));
     fread(save_data, sizeof(uint8_t), file_size, file);
     fclose(file);
 
@@ -604,9 +604,13 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
         return;
     }
 
-    uint8_t *y_dest = (uint8_t*)malloc(width * height);
-    uint8_t *u_dest = (uint8_t*)malloc(width * height / 2);
-    uint8_t *v_dest = (uint8_t*)malloc(width * height / 2);
+    if (height == 0) {
+        logger("height of frame should not be zero.");
+        return;
+    }
+    uint8_t *y_dest = calloc(width, height);
+    uint8_t *u_dest = calloc(width, height / 2);
+    uint8_t *v_dest = calloc(width, height / 2);
 
     for (size_t h = 0; h < height; h++) {
         memcpy(&y_dest[h * width], &y[h * ystride], width);
