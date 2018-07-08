@@ -15,6 +15,8 @@
 #include <tox/toxav.h>
 #include <sodium.h>
 
+#define MRPRICKLES_VERSION "mrprickles version 0.2.1"
+
 // reset name and status message every 60 minutes
 #define RESET_INFO_DELAY 3600
 
@@ -78,7 +80,7 @@ bool save_profile(Tox *tox) {
         fclose(file);
         return true;
     } else {
-        logger("Could not write data to disk");
+        logger("could not write data to disk");
         return false;
     }
 }
@@ -87,7 +89,7 @@ void reset_info(Tox * tox) {
     static const char *name = "Mr. Prickles";
     static const char *status = "a humorously-named cactus from australia";
 
-    puts("resetting info");
+    logger("resetting info");
 
     tox_self_set_name(tox, (uint8_t *)name, strlen(name), NULL);
     tox_self_set_status_message(tox, (uint8_t *)status, strlen(status), NULL);
@@ -148,7 +150,7 @@ void bootstrap(void) {
         }
         if (err2 != TOX_ERR_BOOTSTRAP_OK) {
             assert (! success);
-            logger(" --> Could not bootstrap, error code: %d", err2);
+            logger(" --> could not bootstrap, error code: %d", err2);
         }
     }
 }
@@ -243,9 +245,9 @@ void self_connection_status(__attribute__((unused)) Tox * tox,
         TOX_CONNECTION status,
         __attribute__((unused)) void *userData) {
     if (status == TOX_CONNECTION_NONE) {
-        logger("Lost connection to the tox network");
+        logger("lost connection to the tox network");
     } else {
-        logger("Connected to the tox network, status: %d", status);
+        logger("connected to the tox network, status: %d", status);
     }
 }
 
@@ -258,9 +260,9 @@ void friend_request(Tox *tox, const uint8_t *public_key,
     logger("received friend request: %s", message);
 
     if (err != TOX_ERR_FRIEND_ADD_OK) {
-        logger("Could not add friend, error: %d", err);
+        logger("could not add friend, error: %d", err);
     } else {
-        logger("Added to our friend list");
+        logger("added to our friend list");
     }
 
     save_profile(tox);
@@ -310,6 +312,11 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
     memcpy(dest_msg, message, length);
 
     if (!strncmp("info", dest_msg, 4)) {
+//         FIXME test this better
+        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+                (uint8_t*) MRPRICKLES_VERSION, strlen(MRPRICKLES_VERSION),
+                NULL);
+
         char time_msg[TOX_MAX_MESSAGE_LENGTH];
         uint64_t cur_time = time(NULL);
 
@@ -546,10 +553,10 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
     uint8_t * friendName;
     friend_name_from_num(&friendName, toxav_get_tox(toxAV), friendNum);
     if (state & TOXAV_FRIEND_CALL_STATE_FINISHED) {
-        logger("Call with friend %d (%s) finished", friendNum, friendName);
+        logger("call with friend %d (%s) finished", friendNum, friendName);
         return;
     } else if (state & TOXAV_FRIEND_CALL_STATE_ERROR) {
-        logger("Call with friend %d (%s) errored", friendNum, friendName);
+        logger("call with friend %d (%s) errored", friendNum, friendName);
         return;
     }
 
@@ -571,7 +578,7 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
         logger("video bit rate failed to set.");
     }
 
-    logger("Call state for friend %d (%s) changed to %d: audio: %d, video: %d",
+    logger("call state for friend %d (%s) changed to %d: audio: %d, video: %d",
             friendNum, friendName, state, send_audio, send_video);
     free(friendName);
 }
@@ -585,7 +592,7 @@ void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum,
             sampling_rate, &err);
 
     if (err != TOXAV_ERR_SEND_FRAME_OK) {
-        logger("Could not send audio frame to friend: %d, error: %d",
+        logger("could not send audio frame to friend: %d, error: %d",
                 friendNum, err);
     }
 }
@@ -630,7 +637,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
     free(v_dest);
 
     if (err != TOXAV_ERR_SEND_FRAME_OK) {
-        logger("Could not send video frame to friend: %d, error: %d",
+        logger("could not send video frame to friend: %d, error: %d",
                 friendNum, err);
     }
 }
@@ -649,6 +656,8 @@ static void handle_signal(int sig) {
 int main(void) {
     start_time = time(NULL);
 
+    logger(MRPRICKLES_VERSION);
+
     TOX_ERR_NEW err = TOX_ERR_NEW_OK;
     struct Tox_Options options;
     tox_options_default(&options);
@@ -664,18 +673,18 @@ int main(void) {
     if (file_exists(data_filename)) {
         err = load_profile(&g_tox, &options);
         if (err == TOX_ERR_NEW_OK) {
-            logger("Loaded data from %s", data_filename);
+            logger("loaded data from %s", data_filename);
         } else {
-            logger("Failed to load data from disk: error code %d", err);
+            logger("failed to load data from disk: error code %d", err);
             return -1;
         }
     } else {
-        puts("Creating a new profile");
+        puts("creating a new profile");
 
         g_tox = tox_new(&options, &err);
 
         if (err != TOX_ERR_NEW_OK) {
-            logger("Error at tox_new, error: %d", err);
+            logger("error at tox_new, error: %d", err);
             return -1;
         }
 
@@ -706,7 +715,7 @@ int main(void) {
     toxav_callback_video_receive_frame(g_toxAV, video_receive_frame, NULL);
 
     if (err3 != TOXAV_ERR_NEW_OK) {
-        logger("Error at toxav_new: %d", err3);
+        logger("error at toxav_new: %d", err3);
         return -1;
     }
 
