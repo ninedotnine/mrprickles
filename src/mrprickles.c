@@ -20,9 +20,14 @@
 // reset name and status message every 60 minutes
 #define RESET_INFO_DELAY 3600
 
-// static uint64_t last_purge;
-static uint64_t last_info_change; // 0 when info unchanged, a time otherwise
-static uint64_t start_time;
+static const char * const name = "Mr. Prickles";
+static const char * const statuses[] = {
+    "a humorously-named cactus from australia",
+    "i am a robot pretending to be a cactus"
+};
+
+static time_t last_info_change; // always a timestring
+static time_t start_time;
 static bool signal_exit = false;
 static bool gameMode = false;
 
@@ -86,18 +91,22 @@ bool save_profile(Tox *tox) {
 }
 
 void reset_info(Tox * tox) {
-    static const char *name = "Mr. Prickles";
-    static const char *status = "a humorously-named cactus from australia";
+    static int status_number = 0;
+    static const char * status;
+
+    static_assert(sizeof(statuses)/sizeof(statuses[0]) == 2, "wrong statuses size");
+    status_number = (status_number + 1) % (sizeof(statuses)/sizeof(statuses[0]));
+    status = statuses[status_number];
 
     logger("resetting info");
 
-    tox_self_set_name(tox, (uint8_t *)name, strlen(name), NULL);
-    tox_self_set_status_message(tox, (uint8_t *)status, strlen(status), NULL);
+    tox_self_set_name(tox, (uint8_t *) name, strlen(name), NULL);
+    tox_self_set_status_message(tox, (uint8_t *) status, strlen(status), NULL);
 
     save_profile(tox);
 
     // set last_info_change to 0 to mean info hasn't been changed
-    last_info_change = 0;
+    last_info_change = time(NULL);
 }
 
 void bootstrap(void) {
@@ -167,14 +176,13 @@ static void * run_toxav(void * arg) {
 
 static void * run_tox(void * arg) {
     Tox * tox = (Tox *) arg;
-    uint64_t curr_time;
+    time_t curr_time;
 
     for (long long interval; true; usleep(interval)) {
         tox_iterate(tox, NULL);
 
         curr_time = time(NULL);
-        if (last_info_change &&
-                curr_time - last_info_change > RESET_INFO_DELAY) {
+        if (curr_time - last_info_change > RESET_INFO_DELAY) {
             reset_info(tox);
         }
 
@@ -184,7 +192,7 @@ static void * run_tox(void * arg) {
 }
 
 /* ssssshhh I stole this from ToxBot, don't tell anyone.. */
-static void get_elapsed_time_str(char *buf, int bufsize, uint64_t secs) {
+static void get_elapsed_time_str(char *buf, int bufsize, time_t secs) {
     long unsigned int minutes = (secs % 3600) / 60;
     long unsigned int hours = (secs / 3600) % 24;
     long unsigned int days = (secs / 3600) / 24;
@@ -318,7 +326,7 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
                 NULL);
 
         char time_msg[TOX_MAX_MESSAGE_LENGTH];
-        uint64_t cur_time = time(NULL);
+        time_t cur_time = time(NULL);
 
         get_elapsed_time_str(time_msg, sizeof(time_msg), cur_time-start_time);
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
@@ -381,7 +389,6 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
             tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                     (uint8_t *) msg, strlen(msg), NULL);
         }
-
     } else if (!strcmp("keys", dest_msg)) {
         char *msg;
         if (friendNum == 0) { /* friend 0 is considered the admin. */
