@@ -17,8 +17,8 @@
 
 #define MRPRICKLES_VERSION "mrprickles version 0.2.1"
 
-// reset name and status message every 60 minutes
-#define RESET_INFO_DELAY 3600
+// reset name and status message every 6 hours
+#define RESET_INFO_DELAY 21600
 
 static const char * const name = "Mr. Prickles";
 static const char * const statuses[] = {
