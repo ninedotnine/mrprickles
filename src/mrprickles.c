@@ -417,10 +417,8 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
 
                 TOX_ERR_FRIEND_GET_PUBLIC_KEY err2;
                 uint8_t pubkey_bin[TOX_PUBLIC_KEY_SIZE];
-
                 bool ok = tox_friend_get_public_key(tox, i, pubkey_bin, &err2);
-                if ((ok != true)
-                        || (err2 != TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)) {
+                if ((! ok) || (err2 != TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)) {
                     logger("can't get friend %d's key.", i);
                     continue;
                 }
