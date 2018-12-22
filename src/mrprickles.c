@@ -313,6 +313,32 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     free(name);
 }
 
+void send_info_message(Tox* tox, uint32_t friend_num) {
+    char msg[TOX_MAX_MESSAGE_LENGTH];
+
+    char hostname[100];
+    static_assert(TOX_MAX_MESSAGE_LENGTH - sizeof(hostname) > 50, "TOX_MAX_MESSAGE_LENGTH is very small.");
+    if (gethostname(hostname, sizeof(hostname))) {
+        logger("unable to get hostname");
+    } else {
+        snprintf(msg, sizeof(msg), "%s on %s", MRPRICKLES_VERSION, hostname);
+        tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
+            (uint8_t *) msg, strlen(msg), NULL);
+    }
+
+    time_t cur_time = time(NULL);
+    get_elapsed_time_str(msg, sizeof(msg), cur_time-start_time);
+    tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
+            (uint8_t *) msg, strlen(msg), NULL);
+
+    snprintf(msg, sizeof(msg), "friends: %zu (%d online)",
+            tox_self_get_friend_list_size(tox),
+            get_online_friend_count(tox));
+    tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
+            (uint8_t *) msg, strlen(msg), NULL);
+
+}
+
 void friend_message(Tox *tox, uint32_t friendNum,
         __attribute__((unused)) TOX_MESSAGE_TYPE type,
         const uint8_t *message, size_t length,
@@ -329,22 +355,7 @@ void friend_message(Tox *tox, uint32_t friendNum,
     memcpy(dest_msg, message, length);
 
     if (!strncmp("info", dest_msg, 4)) {
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t*) MRPRICKLES_VERSION, strlen(MRPRICKLES_VERSION),
-                NULL);
-
-        char time_msg[TOX_MAX_MESSAGE_LENGTH];
-        time_t cur_time = time(NULL);
-
-        get_elapsed_time_str(time_msg, sizeof(time_msg), cur_time-start_time);
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *) time_msg, strlen(time_msg), NULL);
-        char friend_msg[100];
-        snprintf(friend_msg, sizeof(friend_msg), "friends: %zu (%d online)",
-                tox_self_get_friend_list_size(tox),
-                get_online_friend_count(tox));
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *) friend_msg,strlen(friend_msg),NULL);
+        send_info_message(tox, friendNum);
     } else if (!strncmp("friends", dest_msg, 7)) {
         size_t friendCount = tox_self_get_friend_list_size(tox);
         uint32_t friendList[friendCount];
