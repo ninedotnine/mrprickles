@@ -342,11 +342,6 @@ void friend_message(Tox *tox, uint32_t friendNum,
                 get_online_friend_count(tox));
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) friend_msg,strlen(friend_msg),NULL);
-
-        const char *info_msg = "If you're experiencing issues, well...";
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *) info_msg, strlen(info_msg), NULL);
-
     } else if (!strncmp("friends", dest_msg, 7)) {
         size_t friendCount = tox_self_get_friend_list_size(tox);
         uint32_t friendList[friendCount];
