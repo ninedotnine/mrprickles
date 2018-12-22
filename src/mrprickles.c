@@ -15,7 +15,7 @@
 #include <tox/toxav.h>
 #include <sodium.h>
 
-#define MRPRICKLES_VERSION "mrprickles version 0.2.2"
+#define MRPRICKLES_VERSION "mrprickles version 0.2.3"
 
 // reset name and status message every 6 hours
 #define RESET_INFO_DELAY 21600
