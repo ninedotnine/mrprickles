@@ -474,13 +474,19 @@ void friend_message(Tox *tox, uint32_t friendNum,
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t*) help_msg, strlen (help_msg), NULL);
     } else if (!strcmp ("suicide", dest_msg)) {
-        const char *msg = "so it has come to this...";
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *) msg, strlen(msg), NULL);
-        signal_exit = true;
-        logger("sending SIGINT");
-        int success = pthread_kill(main_thread, SIGINT);
-        assert (success == 0);
+        if (friendNum == 0) { /* friend 0 is considered the admin. */
+            const char *msg = "so it has come to this...";
+            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+                    (uint8_t *) msg, strlen(msg), NULL);
+            signal_exit = true;
+            logger("sending SIGINT");
+            int success = pthread_kill(main_thread, SIGINT);
+            assert (success == 0);
+        } else {
+            const char *msg = "...?";
+            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+                    (uint8_t *) msg, strlen(msg), NULL);
+        }
     } else {
         /* Just repeat what has been said like the nymph Echo. */
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
