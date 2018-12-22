@@ -36,6 +36,7 @@ static char *data_filename;
 
 static Tox *g_tox = NULL;
 static ToxAV *g_toxAV = NULL;
+static pthread_t main_thread;
 
 static const char *help_msg = "list of commands:\ninfo: show stats.\ncallme: launch an audio call.\n"
     "videocallme: launch a video call.\nonline/away/busy: change my user status\nname: change my name\n"
@@ -477,9 +478,9 @@ void friend_message(Tox *tox, uint32_t friendNum,
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
         signal_exit = true;
-        int success = raise(SIGINT);
+        logger("sending SIGINT");
+        int success = pthread_kill(main_thread, SIGINT);
         assert (success == 0);
-        logger("raised SIGINT");
     } else {
         /* Just repeat what has been said like the nymph Echo. */
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
@@ -627,6 +628,7 @@ static void handle_signal(int sig) {
 
 int main(void) {
     start_time = time(NULL);
+    main_thread = pthread_self();
 
     logger(MRPRICKLES_VERSION);
 
