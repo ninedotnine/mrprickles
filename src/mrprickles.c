@@ -20,8 +20,8 @@
 // reset name and status message every 6 hours
 #define RESET_INFO_DELAY 21600
 
-static const char * const name = "Mr. Prickles";
-static const char * const statuses[] = {
+static const char * const mrprickles_name = "Mr. Prickles";
+static const char * const mrprickles_statuses[] = {
     "a humorously-named cactus from australia",
     "i am a robot pretending to be a cactus"
 };
@@ -93,13 +93,13 @@ void reset_info(Tox * tox) {
     static int status_number = 0;
     static const char * status;
 
-    static_assert(sizeof(statuses)/sizeof(statuses[0]) == 2, "wrong statuses size");
-    status_number = (status_number + 1) % (sizeof(statuses)/sizeof(statuses[0]));
-    status = statuses[status_number];
+    static_assert(sizeof(mrprickles_statuses)/sizeof(mrprickles_statuses[0]) == 2, "wrong statuses size");
+    status_number = (status_number + 1) % (sizeof(mrprickles_statuses)/sizeof(mrprickles_statuses[0]));
+    status = mrprickles_statuses[status_number];
 
     logger("resetting info");
 
-    tox_self_set_name(tox, (uint8_t *) name, strlen(name), NULL);
+    tox_self_set_name(tox, (uint8_t *) mrprickles_name, strlen(mrprickles_name), NULL);
     tox_self_set_status_message(tox, (uint8_t *) status, strlen(status), NULL);
 
     save_profile(tox);
