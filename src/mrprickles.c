@@ -306,9 +306,9 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
     if (connection_status == TOX_CONNECTION_NONE) {
-        logger("friend %d (%s) went offline", friendNum, name);
+        logger("friend %u (%s) went offline", friendNum, name);
     } else {
-        logger("friend %d (%s) came online", friendNum, name);
+        logger("friend %u (%s) came online", friendNum, name);
     }
     free(name);
 }
@@ -331,7 +331,7 @@ void send_info_message(Tox* tox, uint32_t friend_num) {
     tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
             (uint8_t *) msg, strlen(msg), NULL);
 
-    snprintf(msg, sizeof(msg), "friends: %zu (%d online)",
+    snprintf(msg, sizeof(msg), "friends: %zu (%u online)",
             tox_self_get_friend_list_size(tox),
             get_online_friend_count(tox));
     tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
@@ -415,7 +415,7 @@ void send_keys_message(Tox* tox, uint32_t friend_num) {
         uint8_t pubkey_bin[TOX_PUBLIC_KEY_SIZE];
         bool ok = tox_friend_get_public_key(tox, i, pubkey_bin, &err2);
         if ((! ok) || (err2 != TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)) {
-            logger("can't get friend %d's key.", i);
+            logger("can't get friend %u's key.", i);
             continue;
         }
 
@@ -435,9 +435,10 @@ void friend_message(Tox *tox, uint32_t friend_num,
         __attribute__((unused)) TOX_MESSAGE_TYPE type,
         const uint8_t *message, size_t length,
         __attribute__((unused)) void *user_data) {
+
     uint8_t *name;
     friend_name_from_num(&name, tox, friend_num);
-    logger("friend %d (%s) says: \033[1m%s\033[0m", friend_num, name, message);
+    logger("friend %u (%s) says: \033[1m%s\033[0m", friend_num, name, message);
     free(name);
 
     // what is the point of dest_msg ? get rid of it?
@@ -536,9 +537,9 @@ void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
             video_enabled ? video_bitrate : 0, &err);
 
     if (err == TOXAV_ERR_ANSWER_OK) {
-        logger("answered call from friend %d (%s).", friendNum, friendName);
+        logger("answered call from friend %u (%s).", friendNum, friendName);
     } else {
-        logger("could not answer call, friend: %d (%s), error: %d",
+        logger("could not answer call, friend: %u (%s), error: %d",
                 friendNum, friendName, err);
     }
     free(friendName);
@@ -549,10 +550,10 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
     uint8_t * friendName;
     friend_name_from_num(&friendName, toxav_get_tox(toxAV), friendNum);
     if (state & TOXAV_FRIEND_CALL_STATE_FINISHED) {
-        logger("call with friend %d (%s) finished", friendNum, friendName);
+        logger("call with friend %u (%s) finished", friendNum, friendName);
         return;
     } else if (state & TOXAV_FRIEND_CALL_STATE_ERROR) {
-        logger("call with friend %d (%s) errored", friendNum, friendName);
+        logger("call with friend %u (%s) errored", friendNum, friendName);
         return;
     }
 
@@ -574,7 +575,7 @@ void call_state(ToxAV *toxAV, uint32_t friendNum, uint32_t state,
         logger("video bit rate failed to set.");
     }
 
-    logger("call state for friend %d (%s) changed to %d: audio: %d, video: %d",
+    logger("call state for friend %u (%s) changed to %u: audio: %d, video: %d",
             friendNum, friendName, state, send_audio, send_video);
     free(friendName);
 }
@@ -588,7 +589,7 @@ void audio_receive_frame(ToxAV *toxAV, uint32_t friendNum,
             sampling_rate, &err);
 
     if (err != TOXAV_ERR_SEND_FRAME_OK) {
-        logger("could not send audio frame to friend: %d, error: %d",
+        logger("could not send audio frame to friend: %u, error: %d",
                 friendNum, err);
     }
 }
@@ -633,7 +634,7 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
     free(v_dest);
 
     if (err != TOXAV_ERR_SEND_FRAME_OK) {
-        logger("could not send video frame to friend: %d, error: %d",
+        logger("could not send video frame to friend: %u, error: %d",
                 friendNum, err);
     }
 }
