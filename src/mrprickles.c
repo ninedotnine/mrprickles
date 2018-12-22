@@ -339,13 +339,62 @@ void send_info_message(Tox* tox, uint32_t friend_num) {
 
 }
 
-void friend_message(Tox *tox, uint32_t friendNum,
+void send_friends_list_message(Tox* tox, uint32_t friend_num) {
+    size_t friendCount = tox_self_get_friend_list_size(tox);
+    uint32_t friendList[friendCount];
+    tox_self_get_friend_list(tox, friendList);
+
+    for (uint32_t i = 0; i < friendCount; i++) {
+        TOX_ERR_FRIEND_QUERY err;
+        size_t nameSize = tox_friend_get_name_size(tox, i, &err);
+        if (err != TOX_ERR_FRIEND_QUERY_OK) {
+            if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
+                logger("no friend %u.", i);
+            } else {
+                puts("wait, what? this shouldn't happen.");
+            }
+            continue;
+        }
+
+        uint8_t *friend_name;
+        friend_name_from_num(&friend_name, tox, i);
+
+        // what is the status of an offline friend?
+        TOX_USER_STATUS status = tox_friend_get_status(tox, i, &err);
+        if (err != TOX_ERR_FRIEND_QUERY_OK) {
+            puts("could not get friends status");
+            continue;
+        }
+
+        // enough space for name, 3-digit number, status
+        char msg[nameSize+17];
+
+        if (tox_friend_get_connection_status(tox, friendList[i], NULL)
+                == TOX_CONNECTION_NONE) {
+            snprintf(msg, sizeof(msg), "%u: %s (offline)", i, friend_name);
+        } else {
+            if (status == TOX_USER_STATUS_NONE) {
+                snprintf(msg, sizeof(msg), "%u: %s (online)", i, friend_name);
+            } else if (status == TOX_USER_STATUS_AWAY) {
+                snprintf(msg, sizeof(msg), "%u: %s (away)", i, friend_name);
+            } else if (status == TOX_USER_STATUS_BUSY) {
+                snprintf(msg, sizeof(msg), "%u: %s (busy)", i, friend_name);
+            }
+        }
+
+        free(friend_name);
+        tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
+                (uint8_t *) msg, strlen(msg), NULL);
+    }
+}
+
+void friend_message(Tox *tox, uint32_t friend_num,
         __attribute__((unused)) TOX_MESSAGE_TYPE type,
         const uint8_t *message, size_t length,
         __attribute__((unused)) void *user_data) {
     uint8_t *name;
-    friend_name_from_num(&name, tox, friendNum);
-    logger("friend %d (%s) says: \033[1m%s\033[0m", friendNum, name, message);
+    friend_name_from_num(&name, tox, friend_num);
+    logger("friend %d (%s) says: \033[1m%s\033[0m", friend_num, name, message);
     free(name);
 
     // what is the point of dest_msg ? get rid of it?
@@ -355,57 +404,12 @@ void friend_message(Tox *tox, uint32_t friendNum,
     memcpy(dest_msg, message, length);
 
     if (!strncmp("info", dest_msg, 4)) {
-        send_info_message(tox, friendNum);
+        send_info_message(tox, friend_num);
     } else if (!strncmp("friends", dest_msg, 7)) {
-        size_t friendCount = tox_self_get_friend_list_size(tox);
-        uint32_t friendList[friendCount];
-        tox_self_get_friend_list(tox, friendList);
-
-        for (uint32_t i = 0; i < friendCount; i++) {
-            TOX_ERR_FRIEND_QUERY err;
-            size_t nameSize = tox_friend_get_name_size(tox, i, &err);
-            if (err != TOX_ERR_FRIEND_QUERY_OK) {
-                if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
-                    logger("no friend %u.", i);
-                } else {
-                    puts("wait, what? this shouldn't happen.");
-                }
-                continue;
-            }
-
-            uint8_t *friend_name;
-            friend_name_from_num(&friend_name, tox, i);
-
-            // what is the status of an offline friend?
-            TOX_USER_STATUS status = tox_friend_get_status(tox, i, &err);
-            if (err != TOX_ERR_FRIEND_QUERY_OK) {
-                puts("could not get friends status");
-                continue;
-            }
-
-            // enough space for name, 3-digit number, status
-            char msg[nameSize+17];
-
-            if (tox_friend_get_connection_status(tox, friendList[i], NULL)
-                    == TOX_CONNECTION_NONE) {
-                snprintf(msg, sizeof(msg), "%u: %s (offline)", i, friend_name);
-            } else {
-                if (status == TOX_USER_STATUS_NONE) {
-                    snprintf(msg, sizeof(msg), "%u: %s (online)", i, friend_name);
-                } else if (status == TOX_USER_STATUS_AWAY) {
-                    snprintf(msg, sizeof(msg), "%u: %s (away)", i, friend_name);
-                } else if (status == TOX_USER_STATUS_BUSY) {
-                    snprintf(msg, sizeof(msg), "%u: %s (busy)", i, friend_name);
-                }
-            }
-
-            free(friend_name);
-            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                    (uint8_t *) msg, strlen(msg), NULL);
-        }
+        send_friends_list_message(tox, friend_num);
     } else if (!strcmp("keys", dest_msg)) {
         char *msg;
-        if (friendNum == 0) { /* friend 0 is considered the admin. */
+        if (friend_num == 0) { /* friend 0 is considered the admin. */
             msg = "you got it, boss.";
             size_t friendCount = tox_self_get_friend_list_size(tox);
             uint32_t friendList[friendCount];
@@ -442,14 +446,14 @@ void friend_message(Tox *tox, uint32_t friendNum,
                 snprintf(msg, sizeof(msg), "%u: %s %s", i, friend_name, pubkey_hex);
                 puts(pubkey_hex);
 
-                tox_friend_send_message(tox, friendNum,
+                tox_friend_send_message(tox, friend_num,
                                         TOX_MESSAGE_TYPE_NORMAL,
                                         (uint8_t *) msg, strlen(msg), NULL);
                 free(friend_name);
             }
         } else {
             msg = "i'll show you mine if you show me yours.";
-            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+            tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
         }
     } else if (!strncmp("name ", dest_msg, 5) && sizeof(dest_msg) > 5) {
@@ -464,30 +468,30 @@ void friend_message(Tox *tox, uint32_t friendNum,
     } else if (!strncmp("busy", dest_msg, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_BUSY);
         const char *msg = "leave me alone; i'm busy.";
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+        tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
     } else if (!strncmp("away", dest_msg, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_AWAY);
         const char *msg = "i'm not here right now.";
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+        tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
     } else if (!strncmp("online", dest_msg, 6)) {
         tox_self_set_status(tox, TOX_USER_STATUS_NONE);
         const char *msg = "sup? sup brah?";
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+        tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
     } else if (!strncmp("callme", dest_msg, 6)) {
-        toxav_call(g_toxAV, friendNum, audio_bitrate, 0, NULL);
+        toxav_call(g_toxAV, friend_num, audio_bitrate, 0, NULL);
     } else if (!strcmp ("videocallme", dest_msg)) {
-        toxav_call(g_toxAV, friendNum, audio_bitrate, video_bitrate, NULL);
+        toxav_call(g_toxAV, friend_num, audio_bitrate, video_bitrate, NULL);
     } else if (!strncmp ("help", dest_msg, 4)) {
         /* Send usage instructions in new message. */
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+        tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t*) help_msg, strlen (help_msg), NULL);
     } else if (!strcmp ("suicide", dest_msg)) {
-        if (friendNum == 0) { /* friend 0 is considered the admin. */
+        if (friend_num == 0) { /* friend 0 is considered the admin. */
             const char *msg = "so it has come to this...";
-            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+            tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                     (uint8_t *) msg, strlen(msg), NULL);
             signal_exit = true;
             logger("sending SIGINT");
@@ -495,12 +499,12 @@ void friend_message(Tox *tox, uint32_t friendNum,
             assert (success == 0);
         } else {
             const char *msg = "...?";
-            tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+            tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                     (uint8_t *) msg, strlen(msg), NULL);
         }
     } else {
         /* Just repeat what has been said like the nymph Echo. */
-        tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
+        tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 message, length, NULL);
     }
 }
