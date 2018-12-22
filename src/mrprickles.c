@@ -318,7 +318,7 @@ void friend_message(Tox *tox, uint32_t friendNum,
         __attribute__((unused)) void *user_data) {
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
-    logger("\033[1mfriend %d (%s) says: %s\033[0m", friendNum, name, message);
+    logger("friend %d (%s) says: \033[1m%s\033[0m", friendNum, name, message);
     free(name);
 
     // what is the point of dest_msg ? get rid of it?
