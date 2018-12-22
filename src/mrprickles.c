@@ -37,7 +37,9 @@ static char *data_filename;
 static Tox *g_tox = NULL;
 static ToxAV *g_toxAV = NULL;
 
-static const char *help_msg = "list of commands:\ninfo: show stats.\ncallme: launch an audio call.\nvideocallme: launch a video call.\nonline/away/busy: change my user status\nname: change my name\nstatus: change my status message";
+static const char *help_msg = "list of commands:\ninfo: show stats.\ncallme: launch an audio call.\n"
+    "videocallme: launch a video call.\nonline/away/busy: change my user status\nname: change my name\n"
+    "status: change my status message";
 
 void logger(const char * format, ...) {
     va_list ap;
