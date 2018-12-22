@@ -335,17 +335,17 @@ void friend_message(Tox *tox, uint32_t friendNum,
 
         get_elapsed_time_str(time_msg, sizeof(time_msg), cur_time-start_time);
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *)time_msg, strlen(time_msg), NULL);
+                (uint8_t *) time_msg, strlen(time_msg), NULL);
         char friend_msg[100];
         snprintf(friend_msg, sizeof(friend_msg), "friends: %zu (%d online)",
                 tox_self_get_friend_list_size(tox),
                 get_online_friend_count(tox));
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *)friend_msg,strlen(friend_msg),NULL);
+                (uint8_t *) friend_msg,strlen(friend_msg),NULL);
 
         const char *info_msg = "If you're experiencing issues, well...";
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *)info_msg, strlen(info_msg), NULL);
+                (uint8_t *) info_msg, strlen(info_msg), NULL);
 
     } else if (!strncmp("friends", dest_msg, 7)) {
         size_t friendCount = tox_self_get_friend_list_size(tox);
@@ -503,7 +503,7 @@ void file_recv(Tox *tox, uint32_t friendNum, uint32_t fileNum,
 
     const char *msg = "i don't want your dumb file.";
     tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-            (uint8_t*)msg, strlen(msg), NULL);
+            (uint8_t*) msg, strlen(msg), NULL);
 }
 
 void call(ToxAV *toxAV, uint32_t friendNum, bool audio_enabled,
