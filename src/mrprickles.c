@@ -388,6 +388,49 @@ void send_friends_list_message(Tox* tox, uint32_t friend_num) {
     }
 }
 
+void send_keys_message(Tox* tox, uint32_t friend_num) {
+    size_t friendCount = tox_self_get_friend_list_size(tox);
+    uint32_t friendList[friendCount];
+    tox_self_get_friend_list(tox, friendList);
+
+    for (uint32_t i = 0; i < friendCount; i++) {
+        TOX_ERR_FRIEND_QUERY err;
+        size_t nameSize = tox_friend_get_name_size(tox, i, &err);
+        if (err != TOX_ERR_FRIEND_QUERY_OK) {
+            if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
+                logger("no friend %u.", i);
+            } else {
+                puts("wait, what? this shouldn't happen.");
+            }
+            continue;
+        }
+
+        uint8_t *friend_name;
+        friend_name_from_num(&friend_name, tox, i);
+
+        // enough space for name, 3-digit number, pubkey
+        char msg[nameSize+85];
+
+        TOX_ERR_FRIEND_GET_PUBLIC_KEY err2;
+        uint8_t pubkey_bin[TOX_PUBLIC_KEY_SIZE];
+        bool ok = tox_friend_get_public_key(tox, i, pubkey_bin, &err2);
+        if ((! ok) || (err2 != TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)) {
+            logger("can't get friend %d's key.", i);
+            continue;
+        }
+
+        char pubkey_hex[TOX_PUBLIC_KEY_SIZE * 2];
+        to_hex(pubkey_hex, pubkey_bin, TOX_PUBLIC_KEY_SIZE);
+        snprintf(msg, sizeof(msg), "%u: %s %s", i, friend_name, pubkey_hex);
+        puts(pubkey_hex);
+
+        tox_friend_send_message(tox, friend_num,
+                                TOX_MESSAGE_TYPE_NORMAL,
+                                (uint8_t *) msg, strlen(msg), NULL);
+        free(friend_name);
+    }
+}
+
 void friend_message(Tox *tox, uint32_t friend_num,
         __attribute__((unused)) TOX_MESSAGE_TYPE type,
         const uint8_t *message, size_t length,
@@ -408,51 +451,10 @@ void friend_message(Tox *tox, uint32_t friend_num,
     } else if (!strncmp("friends", dest_msg, 7)) {
         send_friends_list_message(tox, friend_num);
     } else if (!strcmp("keys", dest_msg)) {
-        char *msg;
         if (friend_num == 0) { /* friend 0 is considered the admin. */
-            msg = "you got it, boss.";
-            size_t friendCount = tox_self_get_friend_list_size(tox);
-            uint32_t friendList[friendCount];
-            tox_self_get_friend_list(tox, friendList);
-
-            for (uint32_t i = 0; i < friendCount; i++) {
-                TOX_ERR_FRIEND_QUERY err;
-                size_t nameSize = tox_friend_get_name_size(tox, i, &err);
-                if (err != TOX_ERR_FRIEND_QUERY_OK) {
-                    if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
-                        logger("no friend %u.", i);
-                    } else {
-                        puts("wait, what? this shouldn't happen.");
-                    }
-                    continue;
-                }
-
-                uint8_t *friend_name;
-                friend_name_from_num(&friend_name, tox, i);
-
-                // enough space for name, 3-digit number, pubkey
-                char msg[nameSize+85];
-
-                TOX_ERR_FRIEND_GET_PUBLIC_KEY err2;
-                uint8_t pubkey_bin[TOX_PUBLIC_KEY_SIZE];
-                bool ok = tox_friend_get_public_key(tox, i, pubkey_bin, &err2);
-                if ((! ok) || (err2 != TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)) {
-                    logger("can't get friend %d's key.", i);
-                    continue;
-                }
-
-                char pubkey_hex[TOX_PUBLIC_KEY_SIZE * 2];
-                to_hex(pubkey_hex, pubkey_bin, TOX_PUBLIC_KEY_SIZE);
-                snprintf(msg, sizeof(msg), "%u: %s %s", i, friend_name, pubkey_hex);
-                puts(pubkey_hex);
-
-                tox_friend_send_message(tox, friend_num,
-                                        TOX_MESSAGE_TYPE_NORMAL,
-                                        (uint8_t *) msg, strlen(msg), NULL);
-                free(friend_name);
-            }
+            send_keys_message(tox, friend_num);
         } else {
-            msg = "i'll show you mine if you show me yours.";
+            char *msg = "i'll show you mine if you show me yours.";
             tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
         }
