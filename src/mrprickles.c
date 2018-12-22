@@ -408,8 +408,8 @@ void send_keys_message(Tox* tox, uint32_t friend_num) {
         uint8_t *friend_name;
         friend_name_from_num(&friend_name, tox, i);
 
-        // enough space for name, 3-digit number, pubkey
-        char msg[nameSize+85];
+        // enough space for a number, the name, the pubkey
+        char msg[10+nameSize+(2*TOX_PUBLIC_KEY_SIZE)];
 
         TOX_ERR_FRIEND_GET_PUBLIC_KEY err2;
         uint8_t pubkey_bin[TOX_PUBLIC_KEY_SIZE];
