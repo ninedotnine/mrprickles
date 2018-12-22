@@ -29,7 +29,6 @@ static const char * const statuses[] = {
 static time_t last_info_change; // always a timestring
 static time_t start_time;
 static bool signal_exit = false;
-static bool gameMode = false;
 
 static const int32_t audio_bitrate = 48;
 static const int32_t video_bitrate = 5000;
@@ -311,8 +310,15 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     free(name);
 }
 
-void reply_normal_message(Tox * tox, uint32_t friendNum,
-                          const uint8_t * message, size_t length) {
+void friend_message(Tox *tox, uint32_t friendNum,
+        __attribute__((unused)) TOX_MESSAGE_TYPE type,
+        const uint8_t *message, size_t length,
+        __attribute__((unused)) void *user_data) {
+    uint8_t *name;
+    friend_name_from_num(&name, tox, friendNum);
+    logger("\033[1mfriend %d (%s) says: %s\033[0m", friendNum, name, message);
+    free(name);
+
     // what is the point of dest_msg ? get rid of it?
     // the point is that it's a char[] instead of a const uint8_t *
     char dest_msg[length + 1];
@@ -320,7 +326,6 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
     memcpy(dest_msg, message, length);
 
     if (!strncmp("info", dest_msg, 4)) {
-//         FIXME test this better
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t*) MRPRICKLES_VERSION, strlen(MRPRICKLES_VERSION),
                 NULL);
@@ -359,8 +364,8 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
                 continue;
             }
 
-            uint8_t *name;
-            friend_name_from_num(&name, tox, i);
+            uint8_t *friend_name;
+            friend_name_from_num(&friend_name, tox, i);
 
             // what is the status of an offline friend?
             TOX_USER_STATUS status = tox_friend_get_status(tox, i, &err);
@@ -374,18 +379,18 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
 
             if (tox_friend_get_connection_status(tox, friendList[i], NULL)
                     == TOX_CONNECTION_NONE) {
-                snprintf(msg, sizeof(msg), "%u: %s (offline)", i, name);
+                snprintf(msg, sizeof(msg), "%u: %s (offline)", i, friend_name);
             } else {
                 if (status == TOX_USER_STATUS_NONE) {
-                    snprintf(msg, sizeof(msg), "%u: %s (online)", i, name);
+                    snprintf(msg, sizeof(msg), "%u: %s (online)", i, friend_name);
                 } else if (status == TOX_USER_STATUS_AWAY) {
-                    snprintf(msg, sizeof(msg), "%u: %s (away)", i, name);
+                    snprintf(msg, sizeof(msg), "%u: %s (away)", i, friend_name);
                 } else if (status == TOX_USER_STATUS_BUSY) {
-                    snprintf(msg, sizeof(msg), "%u: %s (busy)", i, name);
+                    snprintf(msg, sizeof(msg), "%u: %s (busy)", i, friend_name);
                 }
             }
 
-            free(name);
+            free(friend_name);
             tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                     (uint8_t *) msg, strlen(msg), NULL);
         }
@@ -409,8 +414,8 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
                     continue;
                 }
 
-                uint8_t *name;
-                friend_name_from_num(&name, tox, i);
+                uint8_t *friend_name;
+                friend_name_from_num(&friend_name, tox, i);
 
                 // enough space for name, 3-digit number, pubkey
                 char msg[nameSize+85];
@@ -425,13 +430,13 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
 
                 char pubkey_hex[TOX_PUBLIC_KEY_SIZE * 2];
                 to_hex(pubkey_hex, pubkey_bin, TOX_PUBLIC_KEY_SIZE);
-                snprintf(msg, sizeof(msg), "%u: %s %s", i, name, pubkey_hex);
+                snprintf(msg, sizeof(msg), "%u: %s %s", i, friend_name, pubkey_hex);
                 puts(pubkey_hex);
 
                 tox_friend_send_message(tox, friendNum,
                                         TOX_MESSAGE_TYPE_NORMAL,
                                         (uint8_t *) msg, strlen(msg), NULL);
-                free(name);
+                free(friend_name);
             }
         } else {
             msg = "i'll show you mine if you show me yours.";
@@ -466,15 +471,6 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
         toxav_call(g_toxAV, friendNum, audio_bitrate, 0, NULL);
     } else if (!strcmp ("videocallme", dest_msg)) {
         toxav_call(g_toxAV, friendNum, audio_bitrate, video_bitrate, NULL);
-    } else if (!strncmp("new game", dest_msg, 8)) {
-		const char *msg = "beginning game...";
-        logger(msg);
-		tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-                                (uint8_t *) msg, strlen(msg), NULL);
-//         pthread_t game_thread;
-//         game_starter
-//         pthread_create(&game_thread, NULL, &play_game, tox);
-        gameMode = true;
     } else if (!strncmp ("help", dest_msg, 4)) {
         /* Send usage instructions in new message. */
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
@@ -491,32 +487,6 @@ void reply_normal_message(Tox * tox, uint32_t friendNum,
         /* Just repeat what has been said like the nymph Echo. */
         tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
                 message, length, NULL);
-    }
-}
-
-void reply_game_message(Tox * tox, uint32_t friendNum,
-                        __attribute__((unused)) const uint8_t * message,
-                        __attribute__((unused)) size_t length) {
-    const char *msg = "hahaha, this does nothing! turning game mode back off";
-    tox_friend_send_message(tox, friendNum, TOX_MESSAGE_TYPE_NORMAL,
-            (uint8_t *) msg, strlen(msg), NULL);
-    logger(msg);
-    gameMode = false;
-}
-
-void friend_message(Tox *tox, uint32_t friendNum,
-        __attribute__((unused)) TOX_MESSAGE_TYPE type,
-        const uint8_t *message, size_t length,
-        __attribute__((unused)) void *user_data) {
-    uint8_t *name;
-    friend_name_from_num(&name, tox, friendNum);
-    logger("\033[1mfriend %d (%s) says: %s\033[0m", friendNum, name, message);
-    free(name);
-
-    if (gameMode) {
-        reply_game_message(tox, friendNum, message, length);
-    } else {
-        reply_normal_message(tox, friendNum, message, length);
     }
 }
 
