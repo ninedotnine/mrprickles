@@ -68,11 +68,10 @@ void friend_message(Tox *tox, uint32_t friend_num, GCC_UNUSED TOX_MESSAGE_TYPE t
     logger("friend %u (%s) says: \033[1m%s\033[0m", friend_num, name, message);
     free(name);
 
-    // what is the point of dest_msg ? get rid of it?
-    // the point is that it's a char[] instead of a const uint8_t *
+    // the message was passed to us without a terminating null byte.
     char dest_msg[length + 1];
-    dest_msg[length] = '\0';
     memcpy(dest_msg, message, length);
+    dest_msg[length] = '\0';
 
     reply_friend_message(tox, friend_num, dest_msg, length);
 }
