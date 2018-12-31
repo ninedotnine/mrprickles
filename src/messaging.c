@@ -131,6 +131,8 @@ static void send_keys_message(Tox* tox, uint32_t friend_num) {
 }
 
 void reply_friend_message(Tox *tox, uint32_t friend_num, char *message, size_t length) {
+    assert (length == strlen(message)); // note that the null byte is not included.
+    assert (length <= TOX_MAX_MESSAGE_LENGTH);
     if (!strncmp("info", message, 4)) {
         send_info_message(tox, friend_num);
     } else if (!strncmp("friends", message, 7)) {
