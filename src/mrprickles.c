@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include "av_callbacks.h"
 #include "callbacks.h"
 #include "globals.h"

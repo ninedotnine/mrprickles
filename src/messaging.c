@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include "messaging.h"
 
 #include "globals.h"
