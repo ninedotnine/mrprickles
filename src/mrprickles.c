@@ -18,7 +18,6 @@ void bootstrap(void) {
         const char * const ip;
         const uint16_t port;
         const char key_hex[TOX_PUBLIC_KEY_SIZE*2 + 1];
-    // FIXME unsigned char * const
         unsigned char key_bin[TOX_PUBLIC_KEY_SIZE];
     } nodes[10] = {
             {"nodes.tox.chat",  33445,
@@ -96,7 +95,6 @@ static void * run_tox(void * arg) {
     return NULL;
 }
 
-// static void handle_signal(__attribute__((unused)) int sig) {
 static void handle_signal(int sig) {
     if (sig == SIGINT) {
         logger("received SIGINT");
@@ -174,10 +172,6 @@ int main(void) {
         return -1;
     }
 
-//     sigset_t sigset;
-//     sigemptyset(&sigset);
-//     sigaddset(&sigset, SIGINT);
-
     struct sigaction new_action;
 
     /* Set up the structure to specify the new action. */
@@ -192,12 +186,10 @@ int main(void) {
     pthread_create(&tox_thread, NULL, &run_tox, g_tox);
     pthread_create(&toxav_thread, NULL, &run_toxav, g_toxAV);
 
-
     while (!signal_exit) {
         /* as i understand it, the call to sleep will be interrupted by sigint
            anyway. there is no need to waste cpu resources here...  */
         pause();
-//         sigsuspend(&sigset);
     }
 
     logger("killing tox and saving profile...");
