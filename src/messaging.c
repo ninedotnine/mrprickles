@@ -130,12 +130,12 @@ static void send_keys_message(Tox* tox, uint32_t friend_num) {
     }
 }
 
-void reply_friend_message(Tox *tox, uint32_t friend_num, char *dest_msg, size_t length) {
-    if (!strncmp("info", dest_msg, 4)) {
+void reply_friend_message(Tox *tox, uint32_t friend_num, char *message, size_t length) {
+    if (!strncmp("info", message, 4)) {
         send_info_message(tox, friend_num);
-    } else if (!strncmp("friends", dest_msg, 7)) {
+    } else if (!strncmp("friends", message, 7)) {
         send_friends_list_message(tox, friend_num);
-    } else if (!strncmp("keys", dest_msg, 4)) {
+    } else if (!strncmp("keys", message, 4)) {
         if (friend_num == 0) { /* friend 0 is considered the admin. */
             send_keys_message(tox, friend_num);
         } else {
@@ -143,41 +143,41 @@ void reply_friend_message(Tox *tox, uint32_t friend_num, char *dest_msg, size_t 
             tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
         }
-    } else if (!strncmp("name ", dest_msg, 5) && sizeof(dest_msg) > 5) {
-        char * new_name = dest_msg + 5;
+    } else if (!strncmp("name ", message, 5) && sizeof(message) > 5) {
+        char * new_name = message + 5;
         tox_self_set_name(tox, (uint8_t *) new_name, strlen(new_name), NULL);
         last_info_change = time(NULL);
-    } else if (!strncmp("status ", dest_msg, 7) && sizeof(dest_msg) > 7) {
-        char * new_status = dest_msg + 7;
+    } else if (!strncmp("status ", message, 7) && sizeof(message) > 7) {
+        char * new_status = message + 7;
         tox_self_set_status_message(tox, (uint8_t *) new_status,
                 strlen(new_status),NULL);
         last_info_change = time(NULL);
-    } else if (!strncmp("busy", dest_msg, 4)) {
+    } else if (!strncmp("busy", message, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_BUSY);
         const char *msg = "leave me alone; i'm busy.";
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
-    } else if (!strncmp("away", dest_msg, 4)) {
+    } else if (!strncmp("away", message, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_AWAY);
         const char *msg = "i'm not here right now.";
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
-    } else if (!strncmp("online", dest_msg, 6)) {
+    } else if (!strncmp("online", message, 6)) {
         tox_self_set_status(tox, TOX_USER_STATUS_NONE);
         const char *msg = "sup? sup brah?";
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
-    } else if (!strncmp("reset", dest_msg, 5)) {
+    } else if (!strncmp("reset", message, 5)) {
         reset_info(tox);
-    } else if (!strncmp("callme", dest_msg, 6)) {
+    } else if (!strncmp("callme", message, 6)) {
         toxav_call(g_toxAV, friend_num, audio_bitrate, 0, NULL);
-    } else if (!strncmp ("videocallme", dest_msg, 11)) {
+    } else if (!strncmp ("videocallme", message, 11)) {
         toxav_call(g_toxAV, friend_num, audio_bitrate, video_bitrate, NULL);
-    } else if (!strncmp ("help", dest_msg, 4)) {
+    } else if (!strncmp ("help", message, 4)) {
         /* Send usage instructions in new message. */
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t*) help_msg, strlen (help_msg), NULL);
-    } else if (!strncmp ("suicide", dest_msg, 7)) {
+    } else if (!strncmp ("suicide", message, 7)) {
         if (friend_num == 0) { /* friend 0 is considered the admin. */
             const char *msg = "so it has come to this...";
             tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
@@ -194,6 +194,6 @@ void reply_friend_message(Tox *tox, uint32_t friend_num, char *dest_msg, size_t 
     } else {
         /* Just repeat what has been said like the nymph Echo. */
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t*) dest_msg, length, NULL);
+                (uint8_t*) message, length, NULL);
     }
 }
