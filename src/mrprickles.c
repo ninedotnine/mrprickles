@@ -168,6 +168,7 @@ void bootstrap(void) {
 
 static void * run_toxav(void * arg) {
     ToxAV * toxav = (ToxAV *) arg;
+    assert (toxav != NULL);
 
     for (long long interval; true; usleep(interval)) {
         toxav_iterate(toxav);
@@ -178,6 +179,8 @@ static void * run_toxav(void * arg) {
 
 static void * run_tox(void * arg) {
     Tox * tox = (Tox *) arg;
+    assert (tox != NULL);
+
     time_t curr_time;
 
     for (long long interval; true; usleep(interval)) {
