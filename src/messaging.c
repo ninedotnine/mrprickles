@@ -170,7 +170,13 @@ void reply_friend_message(Tox *tox, uint32_t friend_num, char *message, size_t l
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) reply, strlen(reply), NULL);
     } else if (!strncmp("reset", message, 5)) {
-        reset_info(tox);
+        if (friend_num == 0) { /* friend 0 is considered the admin. */
+            reset_info(tox);
+        } else {
+            char *reply = "you'd better reset yourself before you wreck yourself.";
+            tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
+                (uint8_t *) reply, strlen(reply), NULL);
+        }
     } else if (!strncmp("callme", message, 6)) {
         toxav_call(g_toxAV, friend_num, audio_bitrate, 0, NULL);
     } else if (!strncmp ("videocallme", message, 11)) {
