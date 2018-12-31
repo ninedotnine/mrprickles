@@ -3,6 +3,7 @@
 #include "messaging.h"
 #include "util.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -63,6 +64,13 @@ void file_recv(Tox *tox, uint32_t friendNum, uint32_t fileNum, uint32_t kind, GC
 
 void friend_message(Tox *tox, uint32_t friend_num, GCC_UNUSED TOX_MESSAGE_TYPE type,
                     const uint8_t *message, size_t length, GCC_UNUSED void *user_data) {
+    if (type == TOX_MESSAGE_TYPE_ACTION) {
+        char* reply = ":^O";
+        tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL, (uint8_t *) reply, strlen(reply), NULL);
+        return;
+    }
+    assert (type == TOX_MESSAGE_TYPE_NORMAL);
+
     uint8_t *name;
     friend_name_from_num(&name, tox, friend_num);
     logger("friend %u (%s) says: \033[1m%s\033[0m", friend_num, name, message);
