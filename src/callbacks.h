@@ -1,5 +1,4 @@
-#ifndef MRPRICKLES_CALLBACKS_H
-#define MRPRICKLES_CALLBACKS_H
+#pragma once
 
 #include <tox/tox.h>
 
@@ -30,5 +29,3 @@ void friend_message(Tox *tox, uint32_t friend_num,
         __attribute__((unused)) TOX_MESSAGE_TYPE type,
         const uint8_t *message, size_t length,
         __attribute__((unused)) void *user_data);
-
-#endif

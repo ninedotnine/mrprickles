@@ -1,5 +1,4 @@
-#ifndef MRPRICKLES_UTIL_H
-#define MRPRICKLES_UTIL_H
+#pragma once
 
 #include <tox/tox.h>
 
@@ -23,5 +22,3 @@ void reset_info(Tox * tox);
 void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friendNum);
 
 uint32_t get_online_friend_count(Tox *tox);
-
-#endif

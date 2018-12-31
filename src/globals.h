@@ -1,5 +1,4 @@
-#ifndef MRPRICKLES_GLOBALS_H
-#define MRPRICKLES_GLOBALS_H
+#pragma once
 
 #include <tox/tox.h>
 #include <tox/toxav.h>
@@ -27,5 +26,3 @@ extern ToxAV *g_toxAV;
 extern pthread_t main_thread;
 
 extern const char *help_msg;
-
-#endif

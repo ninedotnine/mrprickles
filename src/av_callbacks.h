@@ -1,5 +1,4 @@
-#ifndef MRPRICKLES_AV_CALLBACKS_H
-#define MRPRICKLES_AV_CALLBACKS_H
+#pragma once
 
 #include <tox/toxav.h>
 
@@ -19,6 +18,3 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friendNum, uint16_t width,
         const uint8_t *v, int32_t ystride, int32_t ustride,
         int32_t vstride,
         __attribute__((unused)) void *user_data);
-
-
-#endif
