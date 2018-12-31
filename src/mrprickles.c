@@ -213,6 +213,8 @@ int main(void) {
     assert (0 == status_thread);
 
     save_profile(g_tox);
+    free(data_filename);
+
     toxav_kill(g_toxAV);
     tox_kill(g_tox);
 
