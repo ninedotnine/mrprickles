@@ -62,8 +62,8 @@ static void send_friends_list_message(Tox* tox, uint32_t friend_num) {
             continue;
         }
 
-        // enough space for name, 3-digit number, status
-        char msg[nameSize+17];
+        // enough space for name, 10-digit number, status
+        char msg[nameSize+24];
 
         if (tox_friend_get_connection_status(tox, friendList[i], NULL)
                 == TOX_CONNECTION_NONE) {
