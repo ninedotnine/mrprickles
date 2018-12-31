@@ -94,23 +94,21 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * co
     return err;
 }
 
-bool save_profile(Tox *tox) {
-    /* returns true if save successful */
+void save_profile(Tox *tox) {
     assert (data_filename != NULL);
     uint32_t save_size = tox_get_savedata_size(tox);
-    uint8_t save_data[save_size];
-
+    uint8_t* save_data = calloc(save_size, sizeof(uint8_t));
     tox_get_savedata(tox, save_data);
 
     FILE *file = fopen(data_filename, "wb");
     if (file) {
         fwrite(save_data, sizeof(uint8_t), save_size, file);
         fclose(file);
-        return true;
+        logger("data saved to disk.");
     } else {
         logger("could not write data to disk");
-        return false;
     }
+    free(save_data);
 }
 
 void reset_info(Tox * tox) {

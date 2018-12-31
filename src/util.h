@@ -12,7 +12,7 @@ void get_elapsed_time_str(char *buf, int bufsize, time_t secs);
 
 bool file_exists(const char *filename);
 
-bool save_profile(Tox *tox);
+void save_profile(Tox *tox);
 
 TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * const data_filename);
 
