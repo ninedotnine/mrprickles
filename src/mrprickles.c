@@ -196,8 +196,21 @@ int main(void) {
     logger("killing tox and saving profile...");
     sleep(1); // a bit of time for messages to finish
 
-    pthread_cancel(toxav_thread);
-    pthread_cancel(tox_thread);
+    int status_av_thread = pthread_cancel(toxav_thread);
+    int status_thread = pthread_cancel(tox_thread);
+
+    if (status_av_thread != 0 || status_thread != 0) {
+        logger("oh man, threads didn't want to be cancelled, this is bad");
+        sleep(2);
+        exit(EXIT_FAILURE);
+    }
+
+    /* wait for threads to exit */
+    status_av_thread = pthread_join(toxav_thread, NULL);
+    status_thread = pthread_join(tox_thread, NULL);
+
+    assert (0 == status_av_thread);
+    assert (0 == status_thread);
 
     save_profile(g_tox);
     toxav_kill(g_toxAV);
