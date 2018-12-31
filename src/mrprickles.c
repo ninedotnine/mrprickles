@@ -480,6 +480,8 @@ void friend_message(Tox *tox, uint32_t friend_num,
         const char *msg = "sup? sup brah?";
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
+    } else if (!strncmp("reset", dest_msg, 5)) {
+        reset_info(tox);
     } else if (!strncmp("callme", dest_msg, 6)) {
         toxav_call(g_toxAV, friend_num, audio_bitrate, 0, NULL);
     } else if (!strcmp ("videocallme", dest_msg)) {
