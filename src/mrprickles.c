@@ -750,9 +750,8 @@ int main(void) {
 //         sigsuspend(&sigset);
     }
 
-    sleep(2); // a bit of time for messages to finish
-
-    logger("killing tox and saving profile");
+    logger("killing tox and saving profile...");
+    sleep(1); // a bit of time for messages to finish
 
     pthread_cancel(toxav_thread);
     pthread_cancel(tox_thread);
