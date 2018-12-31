@@ -145,7 +145,6 @@ void bootstrap(void) {
 
     for (size_t i = 0; i < (sizeof(nodes)/sizeof(nodes[0])); i++) {
         logger("requesting nodes from %s:%d...", nodes[i].ip, nodes[i].port);
-        fflush(stdout);
         sodium_hex2bin(nodes[i].key_bin, sizeof(nodes[i].key_bin),
                 nodes[i].key_hex, sizeof(nodes[i].key_hex)-1,
                 NULL, NULL, NULL);
