@@ -398,6 +398,7 @@ void send_keys_message(Tox* tox, uint32_t friend_num) {
     uint32_t friendList[friendCount];
     tox_self_get_friend_list(tox, friendList);
 
+    logger("listing public key for each friend.");
     for (uint32_t i = 0; i < friendCount; i++) {
         TOX_ERR_FRIEND_QUERY err;
         size_t nameSize = tox_friend_get_name_size(tox, i, &err);
