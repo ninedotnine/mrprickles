@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -std=gnu99 -Wall -Wextra -g -pedantic -march=native -O2
-FILES = src/mrprickles.c
+CFLAGS = -std=c11 -Wall -Wextra -g -pedantic -march=native -O2 -fmax-errors=3
+FILES = src/*.c
 OUT_EXE = bin/mrprickles
 LIBS = -lpthread -lsodium -ltoxcore
 # DEBUGFLAGS = -fsanitize=thread -fsanitize=undefined -fstack-protector-all
