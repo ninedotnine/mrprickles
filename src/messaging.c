@@ -135,7 +135,7 @@ void reply_friend_message(Tox *tox, uint32_t friend_num, char *dest_msg, size_t 
         send_info_message(tox, friend_num);
     } else if (!strncmp("friends", dest_msg, 7)) {
         send_friends_list_message(tox, friend_num);
-    } else if (!strcmp("keys", dest_msg)) {
+    } else if (!strncmp("keys", dest_msg, 4)) {
         if (friend_num == 0) { /* friend 0 is considered the admin. */
             send_keys_message(tox, friend_num);
         } else {
@@ -171,13 +171,13 @@ void reply_friend_message(Tox *tox, uint32_t friend_num, char *dest_msg, size_t 
         reset_info(tox);
     } else if (!strncmp("callme", dest_msg, 6)) {
         toxav_call(g_toxAV, friend_num, audio_bitrate, 0, NULL);
-    } else if (!strcmp ("videocallme", dest_msg)) {
+    } else if (!strncmp ("videocallme", dest_msg, 11)) {
         toxav_call(g_toxAV, friend_num, audio_bitrate, video_bitrate, NULL);
     } else if (!strncmp ("help", dest_msg, 4)) {
         /* Send usage instructions in new message. */
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t*) help_msg, strlen (help_msg), NULL);
-    } else if (!strcmp ("suicide", dest_msg)) {
+    } else if (!strncmp ("suicide", dest_msg, 7)) {
         if (friend_num == 0) { /* friend 0 is considered the admin. */
             const char *msg = "so it has come to this...";
             tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
