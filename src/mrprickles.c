@@ -118,7 +118,7 @@ void bootstrap(void) {
         const char key_hex[TOX_PUBLIC_KEY_SIZE*2 + 1];
     // FIXME unsigned char * const
         unsigned char key_bin[TOX_PUBLIC_KEY_SIZE];
-    } nodes[] = {
+    } nodes[10] = {
             {"nodes.tox.chat",  33445,
                 "788237D34978D1D5BD822F0A5BEBD2C53C64CC31CD3149350EE27D4D9A2F9B6B", {0}},
             {"nodes.tox.chat", 33445,
@@ -143,7 +143,6 @@ void bootstrap(void) {
 
     TOX_ERR_BOOTSTRAP err2;
 
-    static_assert(sizeof(nodes)/sizeof(nodes[0]) == 10, "nodes is borked.");
     for (size_t i = 0; i < (sizeof(nodes)/sizeof(nodes[0])); i++) {
         logger("requesting nodes from %s:%d...", nodes[i].ip, nodes[i].port);
         fflush(stdout);
