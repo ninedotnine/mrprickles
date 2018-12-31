@@ -6,9 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void self_connection_status(__attribute__((unused)) Tox * tox,
-        TOX_CONNECTION status,
-        __attribute__((unused)) void *userData) {
+void self_connection_status(GCC_UNUSED Tox * tox, TOX_CONNECTION status, GCC_UNUSED void *userData) {
     switch (status) {
         case TOX_CONNECTION_NONE:
             logger("lost connection to the tox network");
@@ -24,10 +22,8 @@ void self_connection_status(__attribute__((unused)) Tox * tox,
     }
 }
 
-void friend_request(Tox *tox, const uint8_t *public_key,
-        const uint8_t *message,
-        __attribute__((unused)) size_t length,
-        __attribute__((unused)) void * user_data) {
+void friend_request(Tox *tox, const uint8_t *public_key, const uint8_t *message, GCC_UNUSED size_t length,
+                    GCC_UNUSED void * user_data) {
     TOX_ERR_FRIEND_ADD err;
     tox_friend_add_norequest(tox, public_key, &err);
     logger("received friend request: %s", message);
@@ -41,9 +37,7 @@ void friend_request(Tox *tox, const uint8_t *public_key,
     save_profile(tox);
 }
 
-void friend_on_off(Tox *tox, uint32_t friendNum,
-        TOX_CONNECTION connection_status,
-        __attribute__((unused)) void *user_data) {
+void friend_on_off(Tox *tox, uint32_t friendNum, TOX_CONNECTION connection_status, GCC_UNUSED void *user_data) {
     uint8_t *name;
     friend_name_from_num(&name, tox, friendNum);
     if (connection_status == TOX_CONNECTION_NONE) {
@@ -54,11 +48,8 @@ void friend_on_off(Tox *tox, uint32_t friendNum,
     free(name);
 }
 
-void file_recv(Tox *tox, uint32_t friendNum, uint32_t fileNum,
-        uint32_t kind, __attribute__((unused)) uint64_t file_size,
-        __attribute__((unused)) const uint8_t *filename,
-        __attribute__((unused)) size_t filename_length,
-        __attribute__((unused)) void *user_data) {
+void file_recv(Tox *tox, uint32_t friendNum, uint32_t fileNum, uint32_t kind, GCC_UNUSED uint64_t file_size,
+                GCC_UNUSED const uint8_t *filename, GCC_UNUSED size_t filename_length, GCC_UNUSED void *user_data) {
     if (kind == TOX_FILE_KIND_AVATAR) {
         return;
     }
@@ -70,11 +61,8 @@ void file_recv(Tox *tox, uint32_t friendNum, uint32_t fileNum,
             (uint8_t*) msg, strlen(msg), NULL);
 }
 
-void friend_message(Tox *tox, uint32_t friend_num,
-        __attribute__((unused)) TOX_MESSAGE_TYPE type,
-        const uint8_t *message, size_t length,
-        __attribute__((unused)) void *user_data) {
-
+void friend_message(Tox *tox, uint32_t friend_num, GCC_UNUSED TOX_MESSAGE_TYPE type,
+                    const uint8_t *message, size_t length, GCC_UNUSED void *user_data) {
     uint8_t *name;
     friend_name_from_num(&name, tox, friend_num);
     logger("friend %u (%s) says: \033[1m%s\033[0m", friend_num, name, message);
