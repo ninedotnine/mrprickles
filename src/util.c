@@ -115,7 +115,7 @@ void reset_info(Tox * tox) {
 
     save_profile(tox);
 
-    // set last_info_change to 0 to mean info hasn't been changed
+    // after resetting info, set last_info_change to current time
     last_info_change = time(NULL);
 }
 
