@@ -424,10 +424,12 @@ void send_keys_message(Tox* tox, uint32_t friend_num) {
             continue;
         }
 
-        char pubkey_hex[TOX_PUBLIC_KEY_SIZE * 2];
+        const uint8_t hex_length = (TOX_PUBLIC_KEY_SIZE * 2) + 1;
+        char pubkey_hex[hex_length];
         to_hex(pubkey_hex, pubkey_bin, TOX_PUBLIC_KEY_SIZE);
+        pubkey_hex[hex_length-1] = '\0';
         snprintf(msg, sizeof(msg), "%u: %s %s", i, friend_name, pubkey_hex);
-        puts(pubkey_hex);
+        puts(msg);
 
         tox_friend_send_message(tox, friend_num,
                                 TOX_MESSAGE_TYPE_NORMAL,
