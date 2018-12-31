@@ -121,10 +121,11 @@ int main(void) {
         homedir = getpwuid(getuid())->pw_dir;
     }
 
+    char *data_filename;
     asprintf(&data_filename, "%s/.cache/tox_mrprickles", homedir);
 
     if (file_exists(data_filename)) {
-        err = load_profile(&g_tox, &options);
+        err = load_profile(&g_tox, &options, data_filename);
         if (err == TOX_ERR_NEW_OK) {
             logger("loaded data from %s", data_filename);
         } else {

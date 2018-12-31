@@ -14,7 +14,7 @@ bool file_exists(const char *filename);
 
 bool save_profile(Tox *tox);
 
-TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options);
+TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * const data_filename);
 
 void reset_info(Tox * tox);
 

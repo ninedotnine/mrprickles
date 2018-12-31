@@ -12,7 +12,6 @@ bool signal_exit = false;
 
 const int32_t audio_bitrate = 48;
 const int32_t video_bitrate = 5000;
-char *data_filename;
 
 Tox *g_tox = NULL;
 ToxAV *g_toxAV = NULL;

@@ -55,31 +55,25 @@ bool file_exists(const char *filename) {
     return access(filename, 0) != -1;
 }
 
-bool save_profile(Tox *tox) {
-    uint32_t save_size = tox_get_savedata_size(tox);
-    uint8_t save_data[save_size];
+static const char * data_filename;
 
-    tox_get_savedata(tox, save_data);
-
-    FILE *file = fopen(data_filename, "wb");
-    if (file) {
-        fwrite(save_data, sizeof(uint8_t), save_size, file);
-        fclose(file);
-        return true;
-    } else {
-        logger("could not write data to disk");
-        return false;
-    }
-}
-
-TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options) {
-    FILE *file = fopen(data_filename, "rb");
+TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * const filename) {
+    FILE *file = fopen(filename, "rb");
 
     if (! file) {
         // this should never happen...
-        logger("could not open file %s", data_filename);
+        logger("could not open file %s", filename);
         return TOX_ERR_NEW_LOAD_BAD_FORMAT;
     }
+
+    /* store this name at the top level of this file for use by the save_profile routine.
+       this is unfortunate, but the other options are:
+           * store the filename in a global variable (globals.c)
+           * store it as a static local variable in both routines
+           * save_profile could ask for it as a parameter. a pointer to it would need to be passed to every callback
+             that wants to use it, cast to a (void*).
+       although unsavoury, this seems the best option. */
+    data_filename = filename;
 
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
@@ -98,6 +92,25 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options) {
     free(save_data);
 
     return err;
+}
+
+bool save_profile(Tox *tox) {
+    /* returns true if save successful */
+    assert (data_filename != NULL);
+    uint32_t save_size = tox_get_savedata_size(tox);
+    uint8_t save_data[save_size];
+
+    tox_get_savedata(tox, save_data);
+
+    FILE *file = fopen(data_filename, "wb");
+    if (file) {
+        fwrite(save_data, sizeof(uint8_t), save_size, file);
+        fclose(file);
+        return true;
+    } else {
+        logger("could not write data to disk");
+        return false;
+    }
 }
 
 void reset_info(Tox * tox) {
