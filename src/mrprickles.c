@@ -1,14 +1,10 @@
 #define _GNU_SOURCE
 #include <pthread.h>
-#include <time.h>
-#include <stdio.h>
 #include <stdarg.h>
-#include <stdlib.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
-#include <stdbool.h>
 #include <assert.h>
 
 #include <tox/tox.h>
