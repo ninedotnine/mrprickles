@@ -251,10 +251,18 @@ uint32_t get_online_friend_count(Tox *tox) {
 void self_connection_status(__attribute__((unused)) Tox * tox,
         TOX_CONNECTION status,
         __attribute__((unused)) void *userData) {
-    if (status == TOX_CONNECTION_NONE) {
-        logger("lost connection to the tox network");
-    } else {
-        logger("connected to the tox network, status: %d", status);
+    switch (status) {
+        case TOX_CONNECTION_NONE:
+            logger("lost connection to the tox network");
+            break;
+        case TOX_CONNECTION_TCP:
+            logger("connected to the tox network using TCP.");
+            break;
+        case TOX_CONNECTION_UDP:
+            logger("connected to the tox network using UDP.");
+            break;
+        default:
+            logger("this should absolutely not happen. status: %d", status);
     }
 }
 
