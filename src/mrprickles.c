@@ -292,7 +292,7 @@ void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friendNum) {
         }
         return;
     }
-    *str = calloc(sizeof(uint8_t), size);
+    *str = calloc(sizeof(uint8_t), size+1); // a space at the end for a null byte. calloc initializes it to zero.
     tox_friend_get_name(tox, friendNum, *str, &err);
     if (err != TOX_ERR_FRIEND_QUERY_OK) {
         // what should we do?
