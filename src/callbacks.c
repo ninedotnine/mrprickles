@@ -76,10 +76,13 @@ void friend_message(Tox *tox, uint32_t friend_num, GCC_UNUSED TOX_MESSAGE_TYPE t
     logger("friend %u (%s) says: \033[1m%s\033[0m", friend_num, name, message);
     free(name);
 
-    // the message was passed to us without a terminating null byte.
-    char dest_msg[length + 1];
+    // the message was passed to us without a terminating null byte. the null byte here is provided by calloc
+    char * dest_msg = calloc(sizeof(char), length+1);
+    if (NULL == dest_msg) {
+        logger("oh no, couldn't allocate memory.");
+        return;
+    }
     memcpy(dest_msg, message, length);
-    dest_msg[length] = '\0';
-
     reply_friend_message(tox, friend_num, dest_msg, length);
+    free(dest_msg);
 }
