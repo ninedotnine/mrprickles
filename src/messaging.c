@@ -36,13 +36,13 @@ static void send_info_message(Tox* tox, uint32_t friend_num) {
 }
 
 static void send_friends_list_message(Tox* tox, uint32_t friend_num) {
-    size_t friendCount = tox_self_get_friend_list_size(tox);
-    uint32_t friendList[friendCount];
-    tox_self_get_friend_list(tox, friendList);
+    size_t friend_count = tox_self_get_friend_list_size(tox);
+    uint32_t friend_list[friend_count];
+    tox_self_get_friend_list(tox, friend_list);
 
-    for (uint32_t i = 0; i < friendCount; i++) {
+    for (uint32_t i = 0; i < friend_count; i++) {
         TOX_ERR_FRIEND_QUERY err;
-        size_t nameSize = tox_friend_get_name_size(tox, i, &err);
+        size_t name_size = tox_friend_get_name_size(tox, i, &err);
         if (err != TOX_ERR_FRIEND_QUERY_OK) {
             if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
                 logger("no friend %u.", i);
@@ -63,9 +63,9 @@ static void send_friends_list_message(Tox* tox, uint32_t friend_num) {
         }
 
         // enough space for name, 10-digit number, status
-        char msg[nameSize+24];
+        char msg[name_size+24];
 
-        if (tox_friend_get_connection_status(tox, friendList[i], NULL)
+        if (tox_friend_get_connection_status(tox, friend_list[i], NULL)
                 == TOX_CONNECTION_NONE) {
             snprintf(msg, sizeof(msg), "%u: %s (offline)", i, friend_name);
         } else {
@@ -85,14 +85,14 @@ static void send_friends_list_message(Tox* tox, uint32_t friend_num) {
 }
 
 static void send_keys_message(Tox* tox, uint32_t friend_num) {
-    size_t friendCount = tox_self_get_friend_list_size(tox);
-    uint32_t friendList[friendCount];
-    tox_self_get_friend_list(tox, friendList);
+    size_t friend_count = tox_self_get_friend_list_size(tox);
+    uint32_t friend_list[friend_count];
+    tox_self_get_friend_list(tox, friend_list);
 
     logger("listing public key for each friend.");
-    for (uint32_t i = 0; i < friendCount; i++) {
+    for (uint32_t i = 0; i < friend_count; i++) {
         TOX_ERR_FRIEND_QUERY err;
-        size_t nameSize = tox_friend_get_name_size(tox, i, &err);
+        size_t name_size = tox_friend_get_name_size(tox, i, &err);
         if (err != TOX_ERR_FRIEND_QUERY_OK) {
             if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
                 logger("no friend %u.", i);
@@ -106,7 +106,7 @@ static void send_keys_message(Tox* tox, uint32_t friend_num) {
         friend_name_from_num(&friend_name, tox, i);
 
         // enough space for a number, the name, the pubkey
-        char msg[10+nameSize+(2*TOX_PUBLIC_KEY_SIZE)];
+        char msg[10+name_size+(2*TOX_PUBLIC_KEY_SIZE)];
 
         TOX_ERR_FRIEND_GET_PUBLIC_KEY err2;
         uint8_t pubkey_bin[TOX_PUBLIC_KEY_SIZE];

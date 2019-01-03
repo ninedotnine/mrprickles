@@ -131,20 +131,20 @@ void reset_info(Tox * tox) {
 }
 
 // str is expected to point to an uninitialized pointer
-void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friendNum) {
+void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friend_num) {
     TOX_ERR_FRIEND_QUERY err;
-    size_t size = tox_friend_get_name_size(tox, friendNum, &err);
+    size_t size = tox_friend_get_name_size(tox, friend_num, &err);
     if (err != TOX_ERR_FRIEND_QUERY_OK) {
         // what should we do?
         if (err == TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND) {
-            logger("no friend %u.", friendNum);
+            logger("no friend %u.", friend_num);
         } else {
             puts("how did this happen?");
         }
         return;
     }
     *str = calloc(sizeof(uint8_t), size+1); // a space at the end for a null byte. calloc initializes it to zero.
-    tox_friend_get_name(tox, friendNum, *str, &err);
+    tox_friend_get_name(tox, friend_num, *str, &err);
     if (err != TOX_ERR_FRIEND_QUERY_OK) {
         // what should we do?
         // this should never happen... yes?
