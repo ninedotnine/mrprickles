@@ -37,7 +37,7 @@ static void send_info_message(Tox* tox, uint32_t friend_num) {
 
 static void send_friends_list_message(Tox* tox, uint32_t friend_num) {
     size_t friend_count = tox_self_get_friend_list_size(tox);
-    uint32_t friend_list[friend_count];
+    uint32_t * friend_list = calloc(sizeof(uint32_t), friend_count);
     tox_self_get_friend_list(tox, friend_list);
 
     for (uint32_t i = 0; i < friend_count; i++) {
@@ -82,6 +82,7 @@ static void send_friends_list_message(Tox* tox, uint32_t friend_num) {
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
     }
+    free(friend_list);
 }
 
 static void send_keys_message(Tox* tox, uint32_t friend_num) {
