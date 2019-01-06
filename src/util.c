@@ -155,7 +155,7 @@ void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friend_num) {
 uint32_t get_online_friend_count(Tox *tox) {
     uint32_t online_friend_count = 0u;
     uint32_t friend_count = tox_self_get_friend_list_size(tox);
-    uint32_t friends[friend_count];
+    uint32_t * friends = calloc(friend_count, sizeof(uint32_t));
 
     tox_self_get_friend_list(tox, friends);
 
@@ -166,5 +166,6 @@ uint32_t get_online_friend_count(Tox *tox) {
         }
     }
 
+    free(friends);
     return online_friend_count;
 }
