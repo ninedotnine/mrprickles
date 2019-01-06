@@ -7,6 +7,4 @@ https://github.com/Impyy/EchoBot/
 
 # Compiling
 
-gcc -std=gnu99 -lpthread -lsodium -ltoxcore -ltoxav mrprickles.c
-
-or, y'know, make
+`cd` into the repository and then `make`
