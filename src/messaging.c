@@ -89,8 +89,6 @@ static void send_friends_list_message(Tox* tox, uint32_t friend_num) {
 
 static void send_keys_message(Tox* tox, uint32_t friend_num) {
     size_t friend_count = tox_self_get_friend_list_size(tox);
-    uint32_t friend_list[friend_count];
-    tox_self_get_friend_list(tox, friend_list);
 
     logger("listing public key for each friend.");
     for (uint32_t i = 0; i < friend_count; i++) {
