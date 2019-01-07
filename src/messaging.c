@@ -107,7 +107,8 @@ static void send_keys_message(Tox* tox, uint32_t friend_num) {
         friend_name_from_num(&friend_name, tox, i);
 
         // enough space for a number, the name, the pubkey
-        char msg[10+name_size+(2*TOX_PUBLIC_KEY_SIZE)];
+        const size_t msg_size = 10 + name_size + (2 * TOX_PUBLIC_KEY_SIZE);
+        char * const msg = calloc(msg_size, sizeof(char));
 
         TOX_ERR_FRIEND_GET_PUBLIC_KEY err2;
         uint8_t pubkey_bin[TOX_PUBLIC_KEY_SIZE];
@@ -118,15 +119,17 @@ static void send_keys_message(Tox* tox, uint32_t friend_num) {
         }
 
         const uint8_t hex_length = (TOX_PUBLIC_KEY_SIZE * 2) + 1;
-        char pubkey_hex[hex_length];
+        char * const pubkey_hex = calloc(hex_length, sizeof(char));
         to_hex(pubkey_hex, pubkey_bin, TOX_PUBLIC_KEY_SIZE);
         pubkey_hex[hex_length-1] = '\0';
-        snprintf(msg, sizeof(msg), "%u: %s %s", i, friend_name, pubkey_hex);
+        snprintf(msg, msg_size, "%u: %s %s", i, friend_name, pubkey_hex);
         puts(msg);
 
         tox_friend_send_message(tox, friend_num,
                                 TOX_MESSAGE_TYPE_NORMAL,
                                 (uint8_t *) msg, strlen(msg), NULL);
+        free(pubkey_hex);
+        free(msg);
         free(friend_name);
     }
 }
