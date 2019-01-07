@@ -63,24 +63,26 @@ static void send_friends_list_message(Tox* tox, uint32_t friend_num) {
         }
 
         // enough space for name, 10-digit number, status
-        char msg[name_size+24];
+        size_t msg_size = name_size + 24;
+        char * msg = calloc(msg_size, sizeof(char));
 
         if (tox_friend_get_connection_status(tox, friend_list[i], NULL)
                 == TOX_CONNECTION_NONE) {
-            snprintf(msg, sizeof(msg), "%u: %s (offline)", i, friend_name);
+            snprintf(msg, msg_size, "%u: %s (offline)", i, friend_name);
         } else {
             if (status == TOX_USER_STATUS_NONE) {
-                snprintf(msg, sizeof(msg), "%u: %s (online)", i, friend_name);
+                snprintf(msg, msg_size, "%u: %s (online)", i, friend_name);
             } else if (status == TOX_USER_STATUS_AWAY) {
-                snprintf(msg, sizeof(msg), "%u: %s (away)", i, friend_name);
+                snprintf(msg, msg_size, "%u: %s (away)", i, friend_name);
             } else if (status == TOX_USER_STATUS_BUSY) {
-                snprintf(msg, sizeof(msg), "%u: %s (busy)", i, friend_name);
+                snprintf(msg, msg_size, "%u: %s (busy)", i, friend_name);
             }
         }
 
         free(friend_name);
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
                 (uint8_t *) msg, strlen(msg), NULL);
+        free(msg);
     }
     free(friend_list);
 }
