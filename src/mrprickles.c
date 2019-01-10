@@ -118,7 +118,14 @@ int main(void) {
     const char * homedir;
 
     if ((homedir = getenv("HOME")) == NULL) {
-        homedir = getpwuid(getuid())->pw_dir;
+        struct passwd * pwuid = getpwuid(getuid());
+        if (! pwuid) {
+            logger("unable to find home directory; saving to a temporary location.");
+            homedir = "/tmp";
+        } else {
+            homedir = pwuid->pw_dir;
+        }
+        assert(homedir != NULL);
     }
 
     char *data_filename;
