@@ -7,7 +7,7 @@
 
 #define GCC_UNUSED __attribute__((unused))
 
-#define MRPRICKLES_VERSION "mrprickles version 0.3.0"
+#define MRPRICKLES_VERSION "mrprickles version 0.3.1"
 
 // reset name and status message every 6 hours
 #define RESET_INFO_DELAY 21600
