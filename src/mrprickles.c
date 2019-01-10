@@ -83,6 +83,7 @@ int main(void) {
     }
     reset_info(g_tox);
 
+    /* register tox callbacks. */
     tox_callback_self_connection_status(g_tox, self_connection_status);
     tox_callback_friend_connection_status(g_tox, friend_on_off);
     tox_callback_friend_request(g_tox, friend_request);
@@ -97,6 +98,7 @@ int main(void) {
     /* start it up. */
     bootstrap(g_tox);
 
+    /* create toxav and register callbacks. */
     TOXAV_ERR_NEW err3;
     g_toxAV = toxav_new(g_tox, &err3);
     if (err3 != TOXAV_ERR_NEW_OK) {
@@ -117,19 +119,19 @@ int main(void) {
     sigaction(SIGINT, &new_action, NULL);
     sigaction(SIGTERM, &new_action, NULL);
 
+    /* start the threads and chill out for a while. */
     pthread_t tox_thread, toxav_thread;
     pthread_create(&tox_thread, NULL, &run_tox, g_tox);
     pthread_create(&toxav_thread, NULL, &run_toxav, g_toxAV);
 
     while (!signal_exit) {
-        /* as i understand it, the call to sleep will be interrupted by sigint
-           anyway. there is no need to waste cpu resources here...  */
         pause();
     }
 
     logger("killing tox and saving profile...");
     sleep(1); // a bit of time for messages to finish
 
+    /* start packing up. */
     int status_av_thread = pthread_cancel(toxav_thread);
     int status_thread = pthread_cancel(tox_thread);
 
