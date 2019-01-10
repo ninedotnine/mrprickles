@@ -165,13 +165,11 @@ int main(void) {
     toxav_callback_audio_receive_frame(g_toxAV, audio_receive_frame, NULL);
     toxav_callback_video_receive_frame(g_toxAV, video_receive_frame, NULL);
 
+    /* set up signal handling. */
     struct sigaction new_action;
-
-    /* Set up the structure to specify the new action. */
-    new_action.sa_handler = handle_signal;
     sigemptyset(&new_action.sa_mask);
+    new_action.sa_handler = handle_signal;
     new_action.sa_flags = 0;
-
     sigaction(SIGINT, &new_action, NULL);
     sigaction(SIGTERM, &new_action, NULL);
 
