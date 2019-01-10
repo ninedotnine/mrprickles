@@ -122,7 +122,7 @@ int main(void) {
             logger("loaded data from %s", data_filename);
         } else {
             logger("failed to load data from disk: error code %d", err);
-            return -1;
+            exit(EXIT_FAILURE);
         }
     } else {
         puts("creating a new profile");
@@ -131,7 +131,7 @@ int main(void) {
 
         if (err != TOX_ERR_NEW_OK) {
             logger("error at tox_new, error: %d", err);
-            return -1;
+            exit(EXIT_FAILURE);
         }
 
     }
