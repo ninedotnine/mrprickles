@@ -100,10 +100,10 @@ int main(void) {
     bootstrap(tox);
 
     /* create toxav and register callbacks. */
-    TOXAV_ERR_NEW err3;
-    g_toxAV = toxav_new(tox, &err3);
-    if (err3 != TOXAV_ERR_NEW_OK) {
-        logger("error at toxav_new: %d", err3);
+    TOXAV_ERR_NEW err2;
+    g_toxAV = toxav_new(tox, &err2);
+    if (err2 != TOXAV_ERR_NEW_OK) {
+        logger("error at toxav_new: %d", err2);
         exit(EXIT_FAILURE);
     }
 
