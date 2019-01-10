@@ -53,6 +53,7 @@ static void handle_signal(int sig) {
 int main(void) {
     start_time = time(NULL);
     main_thread = pthread_self();
+    Tox * tox;
 
     logger(MRPRICKLES_VERSION);
 
@@ -63,7 +64,7 @@ int main(void) {
     char * data_filename = set_data_path();
 
     if (file_exists(data_filename)) {
-        err = load_profile(&g_tox, &options, data_filename);
+        err = load_profile(&tox, &options, data_filename);
         if (err == TOX_ERR_NEW_OK) {
             logger("loaded data from %s", data_filename);
         } else {
@@ -73,7 +74,7 @@ int main(void) {
     } else {
         puts("creating a new profile");
 
-        g_tox = tox_new(&options, &err);
+        tox = tox_new(&options, &err);
 
         if (err != TOX_ERR_NEW_OK) {
             logger("error at tox_new, error: %d", err);
@@ -81,26 +82,26 @@ int main(void) {
         }
 
     }
-    reset_info(g_tox);
+    reset_info(tox);
 
     /* register tox callbacks. */
-    tox_callback_self_connection_status(g_tox, self_connection_status);
-    tox_callback_friend_connection_status(g_tox, friend_on_off);
-    tox_callback_friend_request(g_tox, friend_request);
-    tox_callback_friend_message(g_tox, friend_message);
-    tox_callback_file_recv(g_tox, file_recv);
+    tox_callback_self_connection_status(tox, self_connection_status);
+    tox_callback_friend_connection_status(tox, friend_on_off);
+    tox_callback_friend_request(tox, friend_request);
+    tox_callback_friend_message(tox, friend_message);
+    tox_callback_file_recv(tox, file_recv);
 
     /* output my tox ID. */
-    char * tox_id = get_tox_ID(g_tox);
+    char * tox_id = get_tox_ID(tox);
     printf("%s\n", tox_id);
     free(tox_id);
 
     /* start it up. */
-    bootstrap(g_tox);
+    bootstrap(tox);
 
     /* create toxav and register callbacks. */
     TOXAV_ERR_NEW err3;
-    g_toxAV = toxav_new(g_tox, &err3);
+    g_toxAV = toxav_new(tox, &err3);
     if (err3 != TOXAV_ERR_NEW_OK) {
         logger("error at toxav_new: %d", err3);
         exit(EXIT_FAILURE);
@@ -121,7 +122,7 @@ int main(void) {
 
     /* start the threads and chill out for a while. */
     pthread_t tox_thread, toxav_thread;
-    pthread_create(&tox_thread, NULL, &run_tox, g_tox);
+    pthread_create(&tox_thread, NULL, &run_tox, tox);
     pthread_create(&toxav_thread, NULL, &run_toxav, g_toxAV);
 
     while (!signal_exit) {
@@ -148,11 +149,11 @@ int main(void) {
     assert (0 == status_av_thread);
     assert (0 == status_thread);
 
-    save_profile(g_tox);
+    save_profile(tox);
     free(data_filename);
 
     toxav_kill(g_toxAV);
-    tox_kill(g_tox);
+    tox_kill(tox);
 
     return 0;
 }

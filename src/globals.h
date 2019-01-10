@@ -22,7 +22,6 @@ extern bool signal_exit;
 extern const int32_t audio_bitrate;
 extern const int32_t video_bitrate;
 
-extern Tox *g_tox;
 extern ToxAV *g_toxAV;
 extern pthread_t main_thread;
 

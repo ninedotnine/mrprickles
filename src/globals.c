@@ -13,7 +13,6 @@ bool signal_exit = false;
 const int32_t audio_bitrate = 48;
 const int32_t video_bitrate = 5000;
 
-Tox *g_tox = NULL;
 ToxAV *g_toxAV = NULL;
 pthread_t main_thread;
 
