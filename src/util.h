@@ -10,6 +10,8 @@ void to_hex(char *out, uint8_t *in, int size);
 
 char * get_tox_ID(Tox * tox);
 
+void bootstrap(Tox * tox);
+
 void get_elapsed_time_str(char *buf, int bufsize, time_t secs);
 
 bool file_exists(const char *filename);

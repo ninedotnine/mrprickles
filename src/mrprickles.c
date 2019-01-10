@@ -4,53 +4,11 @@
 #include "messaging.h"
 #include "util.h"
 
-#include <sodium/utils.h>
-
 #include <assert.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-void bootstrap(Tox * tox) {
-    struct bootstrap_node {
-        const char * const ip;
-        const uint16_t port;
-        const char key_hex[TOX_PUBLIC_KEY_SIZE*2 + 1]; /* the +1 is for a terminating null byte */
-        unsigned char key_bin[TOX_PUBLIC_KEY_SIZE];
-    } nodes[10] = {
-            {"nodes.tox.chat",  33445, "788237D34978D1D5BD822F0A5BEBD2C53C64CC31CD3149350EE27D4D9A2F9B6B", {0}},
-            {"nodes.tox.chat",  33445, "6FC41E2BD381D37E9748FC0E0328CE086AF9598BECC8FEB7DDF2E440475F300E", {0}},
-            {"130.133.110.14",  33445, "461FA3776EF0FA655F1A05477DF1B3B614F7D6B124F7DB1DD4FE3C08B03B640F", {0}},
-            {"205.185.116.116", 33445, "A179B09749AC826FF01F37A9613F6B57118AE014D4196A0E1105A98F93A54702", {0}},
-            {"163.172.136.118", 33445, "2C289F9F37C20D09DA83565588BF496FAB3764853FA38141817A72E3F18ACA0B", {0}},
-            {"144.76.60.215",   33445, "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F", {0}},
-            {"23.226.230.47",   33445, "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074", {0}},
-            {"178.21.112.187",  33445, "4B2C19E924972CB9B57732FB172F8A8604DE13EEDA2A6234E348983344B23057", {0}},
-            {"195.154.119.113", 33445, "E398A69646B8CEACA9F0B84F553726C1C49270558C57DF5F3C368F05A7D71354", {0}},
-            {"192.210.149.121", 33445, "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67", {0}}
-    };
-
-    TOX_ERR_BOOTSTRAP err;
-    for (size_t i = 0; i < (sizeof(nodes)/sizeof(nodes[0])); i++) {
-        logger("requesting nodes from %s:%d...", nodes[i].ip, nodes[i].port);
-        sodium_hex2bin(nodes[i].key_bin, sizeof(nodes[i].key_bin),
-                nodes[i].key_hex, sizeof(nodes[i].key_hex)-1,
-                NULL, NULL, NULL);
-        bool success = tox_bootstrap(tox, nodes[i].ip, nodes[i].port, nodes[i].key_bin, &err);
-        if (! success) {
-            if (err == TOX_ERR_BOOTSTRAP_BAD_HOST) {
-                logger(" --> could not resolve host: %s", nodes[i].ip);
-            } else {
-                logger(" --> was not able to bootstrap: %s", nodes[i].ip);
-            }
-        }
-        if (err != TOX_ERR_BOOTSTRAP_OK) {
-            assert (! success);
-            logger(" --> could not bootstrap, error code: %d", err);
-        }
-    }
-}
 
 static void * run_toxav(void * arg) {
     ToxAV * toxav = (ToxAV *) arg;
