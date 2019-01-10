@@ -57,6 +57,19 @@ bool file_exists(const char *filename) {
 
 static const char * data_filename;
 
+void store_filename(const char * const filename) {
+    /* store this name at the top level of this file for use by the save_profile routine.
+       this is unfortunate, but the other options are:
+           * store the filename in a global variable (globals.c)
+           * store it as a static local variable in both routines
+           * save_profile could ask for it as a parameter. a pointer to it would need to be passed to every callback
+             that wants to use it, cast to a (void*).
+       although unsavoury, this seems the best option. */
+    assert(filename != NULL);
+    data_filename = filename;
+    logger("filename stored: %s", filename);
+}
+
 TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * const filename) {
     FILE *file = fopen(filename, "rb");
 
@@ -66,14 +79,7 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * co
         return TOX_ERR_NEW_LOAD_BAD_FORMAT;
     }
 
-    /* store this name at the top level of this file for use by the save_profile routine.
-       this is unfortunate, but the other options are:
-           * store the filename in a global variable (globals.c)
-           * store it as a static local variable in both routines
-           * save_profile could ask for it as a parameter. a pointer to it would need to be passed to every callback
-             that wants to use it, cast to a (void*).
-       although unsavoury, this seems the best option. */
-    data_filename = filename;
+    store_filename(filename);
 
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
@@ -104,9 +110,9 @@ void save_profile(Tox *tox) {
     if (file) {
         fwrite(save_data, sizeof(uint8_t), save_size, file);
         fclose(file);
-        logger("data saved to disk.");
+        logger("data written.");
     } else {
-        logger("could not write data to disk");
+        logger("could not write data");
     }
     free(save_data);
 }
