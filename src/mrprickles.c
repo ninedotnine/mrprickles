@@ -7,12 +7,9 @@
 #include <sodium/utils.h>
 
 #include <assert.h>
-#include <errno.h>
-#include <pwd.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 void bootstrap(void) {
@@ -117,41 +114,7 @@ int main(void) {
     struct Tox_Options options;
     tox_options_default(&options);
 
-    const char * home_dir;
-    if ((home_dir = getenv("HOME")) == NULL) {
-        struct passwd * pwuid = getpwuid(getuid());
-        if (! pwuid) {
-            logger("unable to find home directory; saving to a temporary location.");
-            home_dir = "/tmp";
-        } else {
-            home_dir = pwuid->pw_dir;
-        }
-    }
-    assert(home_dir != NULL);
-
-    char * cache_dir;
-    int asprintf_success = asprintf(&cache_dir, "%s/.cache", home_dir);
-    if (asprintf_success == -1) {
-        logger("problem with asprintf, possible memory shortage.");
-        exit(EXIT_FAILURE);
-    }
-
-    const int cache_dir_perms = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH; /* 755 */
-    const int cache_dir_exists = mkdir(cache_dir, cache_dir_perms);
-    if (cache_dir_exists != 0 && errno != EEXIST) {
-        logger("problem creating cache directory.");
-        exit(EXIT_FAILURE);
-    }
-
-    char * data_filename;
-
-    asprintf_success = asprintf(&data_filename, "%s/tox_mrprickles", cache_dir);
-    free(cache_dir);
-    if (asprintf_success == -1) {
-        logger("problem with asprintf, possible memory shortage, value: %d", asprintf_success);
-        exit(EXIT_FAILURE);
-    }
-    assert (data_filename != NULL);
+    char * data_filename = set_data_path();
 
     if (file_exists(data_filename)) {
         err = load_profile(&g_tox, &options, data_filename);
@@ -163,7 +126,6 @@ int main(void) {
         }
     } else {
         puts("creating a new profile");
-        store_filename(data_filename);
 
         g_tox = tox_new(&options, &err);
 

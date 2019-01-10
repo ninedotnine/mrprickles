@@ -12,7 +12,7 @@ void get_elapsed_time_str(char *buf, int bufsize, time_t secs);
 
 bool file_exists(const char *filename);
 
-void store_filename(const char * const data_filename);
+char * set_data_path(void);
 
 void save_profile(Tox *tox);
 

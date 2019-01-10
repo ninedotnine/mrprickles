@@ -3,10 +3,13 @@
 #include "globals.h"
 
 #include <assert.h>
+#include <errno.h>
+#include <pwd.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 void logger(const char * format, ...) {
@@ -57,7 +60,42 @@ bool file_exists(const char *filename) {
 
 static const char * data_filename;
 
-void store_filename(const char * const filename) {
+char * set_data_path(void) {
+    const char * home_dir;
+    if ((home_dir = getenv("HOME")) == NULL) {
+        struct passwd * pwuid = getpwuid(getuid());
+        if (! pwuid) {
+            logger("unable to find home directory; saving to a temporary location.");
+            home_dir = "/tmp";
+        } else {
+            home_dir = pwuid->pw_dir;
+        }
+    }
+    assert(home_dir != NULL);
+
+    char * cache_dir;
+    int asprintf_success = asprintf(&cache_dir, "%s/.cache", home_dir);
+    if (asprintf_success == -1) {
+        logger("problem with asprintf, possible memory shortage.");
+        exit(EXIT_FAILURE);
+    }
+    assert(cache_dir != NULL);
+
+    const int cache_dir_perms = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH; /* 755 */
+    const int cache_dir_exists = mkdir(cache_dir, cache_dir_perms);
+    if (cache_dir_exists != 0 && errno != EEXIST) {
+        logger("problem creating cache directory.");
+        exit(EXIT_FAILURE);
+    }
+
+    char * file_name;
+    asprintf_success = asprintf(&file_name, "%s/tox_mrprickles", cache_dir);
+    free(cache_dir);
+    if (asprintf_success == -1) {
+        logger("problem with asprintf, possible memory shortage, value: %d", asprintf_success);
+        exit(EXIT_FAILURE);
+    }
+
     /* store this name at the top level of this file for use by the save_profile routine.
        this is unfortunate, but the other options are:
            * store the filename in a global variable (globals.c)
@@ -65,9 +103,9 @@ void store_filename(const char * const filename) {
            * save_profile could ask for it as a parameter. a pointer to it would need to be passed to every callback
              that wants to use it, cast to a (void*).
        although unsavoury, this seems the best option. */
-    assert(filename != NULL);
-    data_filename = filename;
-    logger("filename stored: %s", filename);
+    assert(file_name != NULL);
+    data_filename = file_name;
+    return file_name;
 }
 
 TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * const filename) {
@@ -78,8 +116,6 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * co
         logger("could not open file %s", filename);
         return TOX_ERR_NEW_LOAD_BAD_FORMAT;
     }
-
-    store_filename(filename);
 
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
@@ -101,6 +137,7 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * co
 }
 
 void save_profile(Tox *tox) {
+    /* the function set_data_path must be called before this one. */
     assert (data_filename != NULL);
     uint32_t save_size = tox_get_savedata_size(tox);
     uint8_t* save_data = calloc(save_size, sizeof(uint8_t));
