@@ -143,13 +143,10 @@ int main(void) {
     tox_callback_friend_message(g_tox, friend_message);
     tox_callback_file_recv(g_tox, file_recv);
 
-    uint8_t address_bin[TOX_ADDRESS_SIZE];
-    tox_self_get_address(g_tox, (uint8_t *)address_bin);
-    char address_hex[TOX_ADDRESS_SIZE * 2 + 1];
-    sodium_bin2hex(address_hex, sizeof(address_hex), address_bin,
-            sizeof(address_bin));
-
-    printf("%s\n", address_hex);
+    /* output my tox ID. */
+    char * tox_id = get_tox_ID(g_tox);
+    printf("%s\n", tox_id);
+    free(tox_id);
 
     bootstrap();
 

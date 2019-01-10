@@ -2,6 +2,8 @@
 
 #include "globals.h"
 
+#include <sodium/utils.h>
+
 #include <assert.h>
 #include <errno.h>
 #include <pwd.h>
@@ -43,6 +45,16 @@ void to_hex(char *out, uint8_t *in, int size) {
         }
         in++;
     }
+}
+
+char * get_tox_ID(Tox * tox) {
+    uint8_t address_bin[TOX_ADDRESS_SIZE];
+    tox_self_get_address(tox, (uint8_t *) address_bin);
+    size_t tox_ID_size = TOX_ADDRESS_SIZE*2 + 1; /* the +1 is for a terminating null byte */
+    char * address_hex = malloc(tox_ID_size);
+    sodium_bin2hex(address_hex, tox_ID_size, address_bin, sizeof(address_bin));
+    address_hex[tox_ID_size-1] = '\0';
+    return address_hex;
 }
 
 /* ssssshhh I stole this from ToxBot, don't tell anyone.. */
