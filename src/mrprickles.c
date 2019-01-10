@@ -155,15 +155,15 @@ int main(void) {
 
     TOXAV_ERR_NEW err3;
     g_toxAV = toxav_new(g_tox, &err3);
+    if (err3 != TOXAV_ERR_NEW_OK) {
+        logger("error at toxav_new: %d", err3);
+        exit(EXIT_FAILURE);
+    }
+
     toxav_callback_call(g_toxAV, call, NULL);
     toxav_callback_call_state(g_toxAV, call_state, NULL);
     toxav_callback_audio_receive_frame(g_toxAV, audio_receive_frame, NULL);
     toxav_callback_video_receive_frame(g_toxAV, video_receive_frame, NULL);
-
-    if (err3 != TOXAV_ERR_NEW_OK) {
-        logger("error at toxav_new: %d", err3);
-        return -1;
-    }
 
     struct sigaction new_action;
 
