@@ -16,10 +16,12 @@
 
 void logger(const char * format, ...) {
     va_list ap;
+    struct tm time_struct;
     const time_t curr_time = time(NULL);
+    localtime_r(&curr_time, &time_struct);
     char timestr[50];
 
-    strftime(timestr, sizeof(timestr), "[%b %d %T] ", localtime(&curr_time));
+    strftime(timestr, sizeof(timestr), "[%b %d %T] ", &time_struct);
     fputs(timestr, stdout);
 
     va_start(ap, format);
