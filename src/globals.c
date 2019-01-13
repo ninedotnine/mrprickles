@@ -8,7 +8,7 @@ const char * const mrprickles_statuses[] = {
 
 time_t last_info_change; // always a timestring
 time_t start_time;
-bool signal_exit = false;
+atomic_bool signal_exit = false;
 
 const int32_t audio_bitrate = 48;
 const int32_t video_bitrate = 5000;

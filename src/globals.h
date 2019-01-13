@@ -4,6 +4,7 @@
 #include <tox/toxav.h>
 
 #include <pthread.h>
+#include <stdatomic.h>
 
 #define GCC_UNUSED __attribute__((unused))
 
@@ -17,7 +18,7 @@ extern const char * const mrprickles_statuses[2];
 
 extern time_t last_info_change; // always a timestring
 extern time_t start_time;
-extern bool signal_exit;
+extern atomic_bool signal_exit;
 
 extern const int32_t audio_bitrate;
 extern const int32_t video_bitrate;
