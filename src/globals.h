@@ -8,7 +8,7 @@
 
 #define GCC_UNUSED __attribute__((unused))
 
-#define MRPRICKLES_VERSION "mrprickles version 0.3.1"
+#define MRPRICKLES_VERSION "mrprickles version 0.3.2"
 
 extern const char * const mrprickles_name;
 extern const char * const mrprickles_statuses[2];
