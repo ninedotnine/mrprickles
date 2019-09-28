@@ -14,9 +14,9 @@ static void * run_toxav(void * arg) {
     ToxAV * toxav = (ToxAV *) arg;
     assert (toxav != NULL);
 
-    for (long long interval; true; usleep(interval)) {
+    for (uint32_t interval; true; usleep(interval)) {
         toxav_iterate(toxav);
-        interval = toxav_iteration_interval(toxav) * 1000L; // microseconds
+        interval = toxav_iteration_interval(toxav) * 1000; // microseconds
     }
     return NULL;
 }
@@ -27,7 +27,7 @@ static void * run_tox(void * arg) {
 
     time_t curr_time;
 
-    for (long long interval; true; usleep(interval)) {
+    for (uint32_t interval; true; usleep(interval)) {
         tox_iterate(tox, NULL);
 
         curr_time = time(NULL);
@@ -35,7 +35,7 @@ static void * run_tox(void * arg) {
             reset_info(tox);
         }
 
-        interval = tox_iteration_interval(tox) * 1000L; // in microseconds
+        interval = tox_iteration_interval(tox) * 1000; // in microseconds
     }
     return NULL;
 }
