@@ -70,13 +70,13 @@ void audio_receive_frame(ToxAV *toxAV, uint32_t friend_num, const int16_t *pcm, 
 
 void video_receive_frame(ToxAV *toxAV, uint32_t friend_num, uint16_t width, uint16_t height,
                         const uint8_t *y, const uint8_t *u, const uint8_t *v,
-                        int32_t ystride, int32_t ustride, int32_t vstride,
+                        const int32_t ystride, const int32_t ustride, const int32_t vstride,
                         GCC_UNUSED void *user_data) {
-    ystride = abs(ystride);
-    ustride = abs(ustride);
-    vstride = abs(vstride);
+    uint32_t ystride_abs = (uint32_t) abs(ystride);
+    uint32_t ustride_abs = (uint32_t) abs(ustride);
+    uint32_t vstride_abs = (uint32_t) abs(vstride);
 
-    if (ystride < width || ustride < width / 2 || vstride < width / 2) {
+    if (ystride_abs < width || ustride_abs < width / 2 || vstride_abs < width / 2) {
         logger("wtf");
         return;
     }
@@ -90,12 +90,12 @@ void video_receive_frame(ToxAV *toxAV, uint32_t friend_num, uint16_t width, uint
     uint8_t *v_dest = calloc(width, height / 2);
 
     for (size_t h = 0; h < height; h++) {
-        memcpy(&y_dest[h * width], &y[h * ystride], width);
+        memcpy(&y_dest[h * width], &y[h * ystride_abs], width);
     }
 
     for (size_t h = 0; h < height / 2; h++) {
-        memcpy(&u_dest[h * width / 2], &u[h * ustride], width / 2);
-        memcpy(&v_dest[h * width / 2], &v[h * vstride], width / 2);
+        memcpy(&u_dest[h * width / 2], &u[h * ustride_abs], width / 2);
+        memcpy(&v_dest[h * width / 2], &v[h * vstride_abs], width / 2);
     }
 
     TOXAV_ERR_SEND_FRAME err;
