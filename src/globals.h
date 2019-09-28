@@ -21,8 +21,8 @@ extern time_t last_info_change; // always a timestring
 extern time_t start_time;
 extern atomic_bool signal_exit;
 
-extern const int32_t audio_bitrate;
-extern const int32_t video_bitrate;
+extern const uint32_t audio_bitrate;
+extern const uint32_t video_bitrate;
 
 extern ToxAV *g_toxAV;
 extern pthread_t main_thread;

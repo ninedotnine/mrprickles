@@ -13,8 +13,8 @@ time_t last_info_change; // always a timestring
 time_t start_time;
 atomic_bool signal_exit = false;
 
-const int32_t audio_bitrate = 48;
-const int32_t video_bitrate = 5000;
+const uint32_t audio_bitrate = 48;
+const uint32_t video_bitrate = 5000;
 
 ToxAV *g_toxAV = NULL;
 pthread_t main_thread;
