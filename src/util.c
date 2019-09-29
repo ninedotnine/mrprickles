@@ -209,11 +209,10 @@ void save_profile(Tox *tox) {
 }
 
 void reset_info(Tox * tox) {
-    static int status_number = 0;
+    static size_t status_number = 0;
     static const char * status;
 
-    static_assert(sizeof(mrprickles_statuses)/sizeof(mrprickles_statuses[0]) == 2, "wrong statuses size");
-    status_number = (status_number + 1) % (sizeof(mrprickles_statuses)/sizeof(mrprickles_statuses[0]));
+    status_number = (status_number + 1) % mrprickles_nstatuses;
     status = mrprickles_statuses[status_number];
 
     logger("resetting info");

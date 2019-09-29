@@ -8,10 +8,11 @@
 
 #define GCC_UNUSED __attribute__((unused))
 
-#define MRPRICKLES_VERSION "mrprickles version 0.3.2"
+#define MRPRICKLES_VERSION "mrprickles version 0.3.3"
 
 extern const char * const mrprickles_name;
-extern const char * const mrprickles_statuses[2];
+extern const char * const mrprickles_statuses[];
+extern const size_t mrprickles_nstatuses;
 extern const char * const help_msg;
 
 // reset name and status message every 6 hours
