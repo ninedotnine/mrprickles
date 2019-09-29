@@ -1,6 +1,7 @@
 #include "av_callbacks.h"
 #include "callbacks.h"
 #include "globals.h"
+#include "limits.h"
 #include "messaging.h"
 #include "util.h"
 
@@ -9,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+static_assert(CHAR_BIT == 8, "mrprickles casts a lot of uint8_ts to chars.");
 
 static void * run_toxav(void * arg) {
     ToxAV * toxav = (ToxAV *) arg;
