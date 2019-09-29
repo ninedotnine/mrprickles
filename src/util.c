@@ -175,13 +175,20 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * co
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    uint8_t *save_data = calloc(file_size, sizeof(uint8_t));
-    fread(save_data, sizeof(uint8_t), file_size, file);
+    if (file_size < 0) {
+        logger("file size is hosed: %s", strerror(errno));
+        fclose(file);
+        return TOX_ERR_NEW_LOAD_BAD_FORMAT;
+    }
+    size_t file_size_u = (size_t) file_size;
+
+    uint8_t * save_data = calloc(file_size_u, sizeof(uint8_t));
+    fread(save_data, sizeof(uint8_t), file_size_u, file);
     fclose(file);
 
     options->savedata_data = save_data;
     options->savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
-    options->savedata_length = file_size;
+    options->savedata_length = file_size_u;
 
     TOX_ERR_NEW err;
     *tox = tox_new(options, &err);
@@ -193,7 +200,7 @@ TOX_ERR_NEW load_profile(Tox **tox, struct Tox_Options *options, const char * co
 void save_profile(Tox *tox) {
     /* the function set_data_path must be called before this one. */
     assert (data_filename != NULL);
-    uint32_t save_size = tox_get_savedata_size(tox);
+    size_t save_size = tox_get_savedata_size(tox);
     uint8_t* save_data = calloc(save_size, sizeof(uint8_t));
     tox_get_savedata(tox, save_data);
 
@@ -249,13 +256,13 @@ void friend_name_from_num(uint8_t **str, Tox *tox, uint32_t friend_num) {
 }
 
 uint32_t get_online_friend_count(Tox *tox) {
-    uint32_t online_friend_count = 0u;
-    uint32_t friend_count = tox_self_get_friend_list_size(tox);
+    size_t friend_count = tox_self_get_friend_list_size(tox);
     uint32_t * friends = calloc(friend_count, sizeof(uint32_t));
 
     tox_self_get_friend_list(tox, friends);
 
-    for (uint32_t i = 0; i < friend_count; i++) {
+    uint32_t online_friend_count = 0u;
+    for (size_t i = 0; i < friend_count; i++) {
         if (tox_friend_get_connection_status(tox, friends[i], NULL)
                 != TOX_CONNECTION_NONE) {
             online_friend_count++;
