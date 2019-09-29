@@ -100,10 +100,10 @@ void bootstrap(Tox * tox) {
 }
 
 /* ssssshhh I stole this from ToxBot, don't tell anyone.. */
-void get_elapsed_time_str(char *buf, int bufsize, time_t secs) {
-    long unsigned int minutes = (secs % 3600) / 60;
-    long unsigned int hours = (secs / 3600) % 24;
-    long unsigned int days = (secs / 3600) / 24;
+void get_elapsed_time_str(char *buf, size_t bufsize, time_t secs) {
+    long int minutes = (secs % 3600) / 60;
+    long int hours = (secs / 3600) % 24;
+    long int days = (secs / 3600) / 24;
 
     snprintf(buf, bufsize, "uptime: %lud %luh %lum", days, hours, minutes);
 }
