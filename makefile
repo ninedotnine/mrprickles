@@ -8,7 +8,7 @@ DEBUGFLAGS = -fsanitize=address -fsanitize=undefined -fstack-protector-all
 
 build:
 	mkdir -p bin
-	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUT_EXE) $(FILES) $(LIBS)
+	$(CC) $(CFLAGS) -o $(OUT_EXE) $(FILES) $(LIBS)
 
 clean:
 	rm -f $(OUT_EXE)
