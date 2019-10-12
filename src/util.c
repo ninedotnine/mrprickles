@@ -224,8 +224,8 @@ void reset_info(Tox * tox) {
 
     logger("resetting info");
 
-    tox_self_set_name(tox, (uint8_t *) mrprickles_name, strlen(mrprickles_name), NULL);
-    tox_self_set_status_message(tox, (uint8_t *) status, strlen(status), NULL);
+    tox_self_set_name(tox, (const uint8_t *) mrprickles_name, strlen(mrprickles_name), NULL);
+    tox_self_set_status_message(tox, (const uint8_t *) status, strlen(status), NULL);
 
     save_profile(tox);
 

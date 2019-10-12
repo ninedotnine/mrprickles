@@ -162,24 +162,24 @@ void reply_friend_message(Tox *tox, uint32_t friend_num, char *message, size_t l
         tox_self_set_status(tox, TOX_USER_STATUS_BUSY);
         const char *reply = "leave me alone; i'm busy.";
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *) reply, strlen(reply), NULL);
+                (const uint8_t *) reply, strlen(reply), NULL);
     } else if (!strncmp("away", message, 4)) {
         tox_self_set_status(tox, TOX_USER_STATUS_AWAY);
         const char *reply = "i'm not here right now.";
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *) reply, strlen(reply), NULL);
+                (const uint8_t *) reply, strlen(reply), NULL);
     } else if (!strncmp("online", message, 6)) {
         tox_self_set_status(tox, TOX_USER_STATUS_NONE);
         const char *reply = "sup? sup brah?";
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *) reply, strlen(reply), NULL);
+                (const uint8_t *) reply, strlen(reply), NULL);
     } else if (!strncmp("reset", message, 5)) {
         if (friend_num == 0) { /* friend 0 is considered the admin. */
             reset_info(tox);
         } else {
             char *reply = "you'd better reset yourself before you wreck yourself.";
             tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t *) reply, strlen(reply), NULL);
+                (const uint8_t *) reply, strlen(reply), NULL);
         }
     } else if (!strncmp("callme", message, 6)) {
         toxav_call(g_toxAV, friend_num, audio_bitrate, 0, NULL);
@@ -188,12 +188,12 @@ void reply_friend_message(Tox *tox, uint32_t friend_num, char *message, size_t l
     } else if (!strncmp ("help", message, 4)) {
         /* Send usage instructions in new message. */
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t*) help_msg, strlen (help_msg), NULL);
+                (const uint8_t*) help_msg, strlen (help_msg), NULL);
     } else if (!strncmp ("suicide", message, 7)) {
         if (friend_num == 0) { /* friend 0 is considered the admin. */
             const char *reply = "so it has come to this...";
             tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                    (uint8_t *) reply, strlen(reply), NULL);
+                    (const uint8_t *) reply, strlen(reply), NULL);
             signal_exit = true;
             logger("sending SIGINT");
             int success = pthread_kill(main_thread, SIGINT);
@@ -201,11 +201,11 @@ void reply_friend_message(Tox *tox, uint32_t friend_num, char *message, size_t l
         } else {
             const char *reply = "...?";
             tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                    (uint8_t *) reply, strlen(reply), NULL);
+                    (const uint8_t *) reply, strlen(reply), NULL);
         }
     } else {
         /* Just repeat what has been said like the nymph Echo. */
         tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-                (uint8_t*) message, length, NULL);
+                (const uint8_t *) message, length, NULL);
     }
 }

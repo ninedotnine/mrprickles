@@ -59,7 +59,7 @@ void file_recv(Tox *tox, uint32_t friend_num, uint32_t file_num, uint32_t kind, 
 
     const char *msg = "i don't want your dumb file.";
     tox_friend_send_message(tox, friend_num, TOX_MESSAGE_TYPE_NORMAL,
-            (uint8_t*) msg, strlen(msg), NULL);
+            (const uint8_t *) msg, strlen(msg), NULL);
 }
 
 void friend_message(Tox *tox, uint32_t friend_num, TOX_MESSAGE_TYPE type,
