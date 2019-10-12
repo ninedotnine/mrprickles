@@ -62,7 +62,7 @@ void file_recv(Tox *tox, uint32_t friend_num, uint32_t file_num, uint32_t kind, 
             (uint8_t*) msg, strlen(msg), NULL);
 }
 
-void friend_message(Tox *tox, uint32_t friend_num, GCC_UNUSED TOX_MESSAGE_TYPE type,
+void friend_message(Tox *tox, uint32_t friend_num, TOX_MESSAGE_TYPE type,
                     const uint8_t *message, size_t length, GCC_UNUSED void *user_data) {
     if (type == TOX_MESSAGE_TYPE_ACTION) {
         char* reply = ":^O";
